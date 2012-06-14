@@ -30,7 +30,6 @@ import com.trinea.java.common.StringUtils;
  * https://github.com/wdx700/Android-Pull-To-Refresh/blob/master/PullToRefresh/src/com/dmobile/pulltorefresh/
  * PullRefreshContainerView.java
  * http://blog.csdn.net/aomandeshangxiao/article/details/7325383
- * 类DropDownToRefreshListView.java的实现描述：TODO 类实现描述
  * 
  * @author Trinea 2012-5-20 上午12:36:33
  */

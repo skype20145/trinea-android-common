@@ -4,8 +4,7 @@
     android:layout_height="fill_parent"
     android:paddingTop="10dp"
     android:paddingBottom="15dp"
-    android:gravity="center"
-    android:id="@+id/drop_down_to_refresh_list_layout">
+    android:gravity="center">
     <ProgressBar 
         android:id="@+id/drop_down_to_refresh_list_progress"
         android:indeterminate="true"
