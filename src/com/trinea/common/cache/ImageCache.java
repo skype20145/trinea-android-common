@@ -12,8 +12,8 @@ import android.os.Message;
 import android.view.View;
 
 import com.trinea.java.common.StringUtils;
-import com.trinea.java.common.entity.CacheFullRemoveType;
 import com.trinea.java.common.entity.CacheObject;
+import com.trinea.java.common.serviceImpl.RemoveTypeEnterTimeFirst;
 import com.trinea.java.common.serviceImpl.SimpleCache;
 
 /**
@@ -45,7 +45,7 @@ public class ImageCache {
      * 图片缓存，缓存大小为{@link ImageCache#MAX_CACHE_SIZE}
      */
     public ImageCache(){
-        imageCache = new SimpleCache<String, Drawable>(MAX_CACHE_SIZE, -1, CacheFullRemoveType.ENTER_TIME_FIRST);
+        imageCache = new SimpleCache<String, Drawable>(MAX_CACHE_SIZE, -1, new RemoveTypeEnterTimeFirst<Drawable>());
     }
 
     /**
@@ -55,7 +55,7 @@ public class ImageCache {
      */
     public ImageCache(int maxCacheSize){
         imageCache = new SimpleCache<String, Drawable>(maxCacheSize <= 0 ? MAX_CACHE_SIZE : maxCacheSize, -1,
-                                                       CacheFullRemoveType.ENTER_TIME_FIRST);
+                                                       new RemoveTypeEnterTimeFirst<Drawable>());
     }
 
     /**

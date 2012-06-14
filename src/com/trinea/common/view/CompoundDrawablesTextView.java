@@ -1,10 +1,3 @@
-/*
- * Copyright 2012 Trinea.com All right reserved. This software is the
- * confidential and proprietary information of Trinea.com ("Confidential
- * Information"). You shall not disclose such Confidential Information and shall
- * use it only in accordance with the terms of the license agreement you entered
- * into with Trinea.com.
- */
 package com.trinea.common.view;
 
 import android.content.Context;
@@ -66,19 +59,9 @@ public class CompoundDrawablesTextView extends TextView {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (event.getAction() == MotionEvent.ACTION_DOWN && clickListener != null) {
-            if (!clickLeftDrawable(event)) {
-                return false;
-            }
-            if (!clickTopDrawable(event)) {
-                return false;
-            }
-            if (!clickRightDrawable(event)) {
-                return false;
-            }
-            if (!clickBottomDrawable(event)) {
-                return false;
-            }
+        if (!isInTouchMode() && event.getAction() == MotionEvent.ACTION_DOWN && clickListener != null) {
+            return clickLeftDrawable(event) && clickTopDrawable(event) && clickRightDrawable(event)
+                   && clickBottomDrawable(event);
         }
         return super.onTouchEvent(event);
     }
@@ -101,7 +84,7 @@ public class CompoundDrawablesTextView extends TextView {
      */
     private boolean clickLeftDrawable(MotionEvent event) {
         if (leftDrawable != null) {
-            // 计算图片点击可响应的范围，可参考
+            // 计算图片点击可响应的范围
             int drawHeight = leftDrawable.getIntrinsicHeight();
             int drawWidth = leftDrawable.getIntrinsicWidth();
             int topBottomDis = (topDrawable == null ? 0 : topDrawable.getIntrinsicHeight())
