@@ -2,7 +2,6 @@ package com.trinea.common.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -158,9 +157,6 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
     public boolean onTouchEvent(MotionEvent event) {
         isBounceHack = false;
 
-        Log.e("DropDownToRefreshListView",
-              event.getAction() == 0 ? "ACTION_DOWN" : (event.getAction() == 1 ? "ACTION_UP" : "" + event.getAction()));
-        
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 actionDownPointY = event.getY();
