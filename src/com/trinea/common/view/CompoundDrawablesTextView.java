@@ -7,7 +7,6 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.TextView;
 
 /**
@@ -33,15 +32,20 @@ public class CompoundDrawablesTextView extends TextView {
     private Drawable              rightDrawable;
     private Drawable              bottomDrawable;
 
+    private boolean               isLeftTouched   = false;
+    private boolean               isToptTouched   = false;
+    private boolean               isRightTouched  = false;
+    private boolean               isBottomTouched = false;
+
     // 是否消费事件，若为true，表示自己消费，否则向下传递
-    private boolean               isConsumeEvent = true;
+    private boolean               isConsumeEvent  = true;
     // x(y)方向扩展范围，表示图片x(y)方向的此范围内的点击都被接受
-    private int                   lazyX          = 0, lazyY = 0;
+    private int                   lazyX           = 0, lazyY = 0;
 
     // 图片点击的监听器
     private DrawableClickListener clickListener;
 
-    private boolean               isMove         = false;
+    private boolean               isMove          = false;
 
     public CompoundDrawablesTextView(Context context, AttributeSet attrs, int defStyle){
         super(context, attrs, defStyle);
@@ -76,7 +80,7 @@ public class CompoundDrawablesTextView extends TextView {
             case MotionEvent.ACTION_UP:
                 if (!isMove && clickListener != null) {
                     boolean finish = clickLeftDrawable(event) && clickTopDrawable(event) && clickRightDrawable(event)
-                           && clickBottomDrawable(event);
+                                     && clickBottomDrawable(event);
                 }
             default:
                 isMove = false;
@@ -84,18 +88,22 @@ public class CompoundDrawablesTextView extends TextView {
         return super.onTouchEvent(event);
     }
 
-//    public void setOnClickListener(OnClickListener l) {
-//        super.setOnClickListener(new OnClickListener() {
-//            
-//            @Override
-//            public void onClick(View v) {
-//                Log.e("CompoundDrawablesTextView",
-//                      "click");
-//                
-//            }
-//        });
-//    }
-    
+    public void setOnClickListener(OnClickListener l) {
+        if (l == null) {
+            
+        }
+        super.setOnClickListener(l);
+        mOnClickListener = l;
+        new OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                Log.e("CompoundDrawablesTextView", "click");
+
+            }
+        }
+    }
+
     @Override
     protected void finalize() throws Throwable {
         rightDrawable = null;
