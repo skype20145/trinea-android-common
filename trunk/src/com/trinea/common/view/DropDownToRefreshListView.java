@@ -28,10 +28,10 @@ import com.trinea.common.R;
  * <li>刷新结束时调用{@link DropDownToRefreshListView#onRefreshComplete()}表示刷新结束，恢复View状态</li>
  * </ul>
  * <ul>
- * 其他设置见
+ * 其他设置见http://trinea.iteye.com/blog/1560986
  * </ul>
  * <ul>
- * 实现原理见
+ * 实现原理见http://trinea.iteye.com/blog/1562281
  * </ul>
  * 
  * @author Trinea 2012-5-20 上午12:36:33
