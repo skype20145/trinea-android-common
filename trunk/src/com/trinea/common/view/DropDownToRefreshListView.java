@@ -24,8 +24,8 @@ import com.trinea.common.R;
  * <ul>
  * 替代ListView使用，使用方法如下
  * <li>xml中配置同ListView</li>
- * <li>设置{@link DropDownToRefreshListView#setOnRefreshListener(OnRefreshListener)}，刷新时执行onRefresh函数</li>
- * <li>刷新结束时调用{@link DropDownToRefreshListView#onRefreshComplete()}表示刷新结束，恢复View状态</li>
+ * <li>设置{@link #setOnRefreshListener(OnRefreshListener)}，刷新时执行onRefresh函数</li>
+ * <li>刷新结束时调用{@link #onRefreshComplete()}表示刷新结束，恢复View状态</li>
  * </ul>
  * <ul>
  * 其他设置见http://trinea.iteye.com/blog/1560986
@@ -42,16 +42,24 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
      * 刷新的状态
      */
     public enum RefreshStatusEnum {
-        CLICK_TO_REFRESH, PULL_TO_REFRESH, RELEASE_TO_REFRESH, REFRESHING
+        /** 点击刷新状态，为初始状态 **/
+        CLICK_TO_REFRESH,
+        /** 当刷新layout高度低于一定范围时，下拉再释放即可刷新 **/
+        DROP_DOWN_TO_REFRESH,
+        /** 当刷新layout高度高于一定范围时，释放即可刷新 **/
+        RELEASE_TO_REFRESH,
+        /** 刷新中 **/
+        REFRESHING
     }
 
     /** 下拉时下拉距离和header top变化的比例 **/
     private static final float HEADER_PADDING_RATE       = 1.5f;
     /** header height变化的上界 **/
-    private static final int   HEADER_HEIGHT_UPPER_LEVEL = 20;
+    private static final int   HEADER_HEIGHT_UPPER_LEVEL = 10;
 
     /** 刷新事件 **/
     private OnRefreshListener  mOnRefreshListener;
+
     private OnScrollListener   mOnScrollListener;
 
     /** 需要的View **/
@@ -118,6 +126,7 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
         mRefreshViewTipsText.setText(R.string.drop_down_to_refresh_list_refresh_view_tips);
         addHeaderView(mRefreshViewLayout);
 
+        // 设置OnScrollListener为当前的listener
         super.setOnScrollListener(this);
 
         measureView(mRefreshViewLayout);
@@ -190,7 +199,7 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
         /**
          * ListView为SCROLL_STATE_TOUCH_SCROLL状态(按着不放滚动中)并且刷新状态不为REFRESHING
          * a. 刷新对应的item可见时，若刷新layout高度超出范围并且刷新状态不为RELEASE_TO_REFRESH，则置刷新状态为RELEASE_TO_REFRESH；
-         * 若刷新layout高度低于高度范围并且刷新状态不为PULL_TO_REFRESH，则置刷新状态为PULL_TO_REFRESH
+         * 若刷新layout高度低于高度范围并且刷新状态不为DROP_DOWN_TO_REFRESH，则置刷新状态为DROP_DOWN_TO_REFRESH
          * b. 刷新对应的item不可见，重置header
          * ListView为SCROLL_STATE_FLING状态(松手滚动中)
          * a. 若刷新对应的item可见并且刷新状态不为REFRESHING，设置position为1的(即第二个)item可见
@@ -206,13 +215,13 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
                     mRefreshViewImage.startAnimation(mFlipAnimation);
                     mCurrentRefreshState = RefreshStatusEnum.RELEASE_TO_REFRESH;
                 } else if (mRefreshViewLayout.getBottom() < mHeaderOriginalHeight + HEADER_HEIGHT_UPPER_LEVEL
-                           && mCurrentRefreshState != RefreshStatusEnum.PULL_TO_REFRESH) {
+                           && mCurrentRefreshState != RefreshStatusEnum.DROP_DOWN_TO_REFRESH) {
                     mRefreshViewTipsText.setText(R.string.drop_down_to_refresh_list_pull_tips);
                     if (mCurrentRefreshState == RefreshStatusEnum.RELEASE_TO_REFRESH) {
                         mRefreshViewImage.clearAnimation();
                         mRefreshViewImage.startAnimation(mReverseFlipAnimation);
                     }
-                    mCurrentRefreshState = RefreshStatusEnum.PULL_TO_REFRESH;
+                    mCurrentRefreshState = RefreshStatusEnum.DROP_DOWN_TO_REFRESH;
                 }
             } else {
                 resetHeader();
