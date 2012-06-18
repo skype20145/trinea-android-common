@@ -25,6 +25,12 @@ import android.widget.TextView;
  * <strong>注意</strong>
  * <li>若点击的位置同时在多个图片的有效范围内，响应顺序为左上右下，设置{@link #setAllDrawableTouchedResponse(boolean)} 为true后就按顺序响应第一个点击范围内的Drawable</li>
  * </ul>
+ * <ul>
+ * 其他设置见http://trinea.iteye.com/blog/1562385
+ * </ul>
+ * <ul>
+ * 实现原理见http://trinea.iteye.com/blog/1562388
+ * </ul>
  * 
  * @author Trinea 2012-5-3 下午04:47:39
  */
@@ -170,7 +176,7 @@ public class CompoundDrawablesTextView extends TextView implements OnClickListen
             return false;
         }
 
-        // 计算图片点击可响应的范围
+        // 计算图片点击可响应的范围，计算方法见http://trinea.iteye.com/blog/1562388
         int drawHeight = mLeftDrawable.getIntrinsicHeight();
         int drawWidth = mLeftDrawable.getIntrinsicWidth();
         int topBottomDis = (mTopDrawable == null ? 0 : mTopDrawable.getIntrinsicHeight())
