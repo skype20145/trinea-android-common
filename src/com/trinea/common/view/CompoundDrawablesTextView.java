@@ -4,9 +4,9 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.TextView;
 
 /**
@@ -14,220 +14,244 @@ import android.widget.TextView;
  * <ul>
  * 替代TextView使用，使用方法如下
  * <li>xml中配置同TextView</li>
- * <li>设置{@link CompoundDrawablesTextView#setDrawableClickListener(DrawableClickListener)}，实现各个方向图片点击的响应</li>
- * <li>可以设置{@link CompoundDrawablesTextView#setLazy(int, int)}分别表示x和y方向允许的误差，正数表示点击范围向外扩展，负数表示点击范围向内收缩</li>
- * <li>可以设置{@link CompoundDrawablesTextView#setConsumeEvent(boolean)}，true表示在相应图片有效范围内处理后就不再向下传递事件，false表示继续传递</li>
+ * <li>设置{@link #setDrawableClickListener(DrawableClickListener)}，实现各个方向图片点击的响应</li>
+ * <li>可以设置{@link #setLazy(int, int)}表示Drawable可响应的点击区域x和y方向允许的误差，正数表示点击范围向外扩展，负数表示点击范围向内收缩</li>
+ * <li>可以设置{@link #setAllDrawableTouchedResponse(boolean)}
+ * ，表示是否所有被touch的Drawable都响应事件，true表示都响应，false表示按照左上右下的顺序响应第一个点击范围内的Drawable</li>
+ * <li>可以设置{@link #setAlwaysClick(boolean)}
+ * ，表示是否始终响应OnClickListener，true表示响应Drawable后依然响应OnClickListener，false表示响应Drawable后不再响应OnClickListener</li>
  * </ul>
  * <ul>
  * <strong>注意</strong>
- * <li>若点击的位置同时在多个图片的有效范围内，响应顺序为左上右下，设置{@link CompoundDrawablesTextView#setConsumeEvent(boolean)}为true后就按顺序响应第一个</li>
+ * <li>若点击的位置同时在多个图片的有效范围内，响应顺序为左上右下，设置{@link #setAllDrawableTouchedResponse(boolean)} 为true后就按顺序响应第一个点击范围内的Drawable</li>
  * </ul>
  * 
  * @author Trinea 2012-5-3 下午04:47:39
  */
-public class CompoundDrawablesTextView extends TextView {
+public class CompoundDrawablesTextView extends TextView implements OnClickListener {
 
-    private Drawable              leftDrawable;
-    private Drawable              topDrawable;
-    private Drawable              rightDrawable;
-    private Drawable              bottomDrawable;
+    /** 各个方向的图片资源 **/
+    private Drawable              mLeftDrawable;
+    private Drawable              mTopDrawable;
+    private Drawable              mRightDrawable;
+    private Drawable              mBottomDrawable;
 
-    private boolean               isLeftTouched   = false;
-    private boolean               isToptTouched   = false;
-    private boolean               isRightTouched  = false;
-    private boolean               isBottomTouched = false;
+    /** 各个方向的图片资源是否被touch **/
+    private boolean               mIsLeftTouched;
+    private boolean               mIsTopTouched;
+    private boolean               mIsRightTouched;
+    private boolean               mIsBottomTouched;
 
-    // 是否消费事件，若为true，表示自己消费，否则向下传递
-    private boolean               isConsumeEvent  = true;
-    // x(y)方向扩展范围，表示图片x(y)方向的此范围内的点击都被接受
-    private int                   lazyX           = 0, lazyY = 0;
+    /** 是否所有被touch的Drawable都响应事件，true表示都响应，false表示按照左上右下的顺序响应第一个点击范围内的Drawable，默认为true **/
+    private boolean               mIsAllDrawableTouchedResponse = true;
+    /** 是否始终响应OnClickListener，true表示响应Drawable后依然响应OnClickListener，false表示响应Drawable后不再响应OnClickListener，默认为true **/
+    private boolean               mIsAlwaysClick                = true;
+    /** Drawable可响应的点击区域x方向允许的误差，表示图片x方向的此范围内的点击都被接受 **/
+    private int                   mLazyX                        = 0;
+    /** Drawable可响应的点击区域y方向允许的误差，表示图片y方向的此范围内的点击都被接受 **/
+    private int                   mLazyY                        = 0;
 
-    // 图片点击的监听器
-    private DrawableClickListener clickListener;
+    /** 图片点击的监听器 **/
+    private DrawableClickListener mDrawableClickListener;
 
-    private boolean               isMove          = false;
+    private OnClickListener       mOnClickListener;
 
     public CompoundDrawablesTextView(Context context, AttributeSet attrs, int defStyle){
         super(context, attrs, defStyle);
+        init();
     }
 
     public CompoundDrawablesTextView(Context context, AttributeSet attrs){
         super(context, attrs);
+        init();
     }
 
     public CompoundDrawablesTextView(Context context){
         super(context);
+        init();
+    }
+
+    /**
+     * 设置OnClickListener为当前的listener，即调用{@link CompoundDrawablesTextView#onClick(View)}函数
+     **/
+    private void init() {
+        super.setOnClickListener(this);
     }
 
     @Override
     public void setCompoundDrawables(Drawable left, Drawable top, Drawable right, Drawable bottom) {
-        leftDrawable = left;
-        topDrawable = top;
-        rightDrawable = right;
-        bottomDrawable = bottom;
+        mLeftDrawable = left;
+        mTopDrawable = top;
+        mRightDrawable = right;
+        mBottomDrawable = bottom;
         super.setCompoundDrawables(left, top, right, bottom);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
-        Log.e("CompoundDrawablesTextView",
-              event.getAction() == 0 ? "ACTION_DOWN" : (event.getAction() == 1 ? "ACTION_UP" : "" + event.getAction()));
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_MOVE:
-                isMove = true;
-                break;
-            case MotionEvent.ACTION_UP:
-                if (!isMove && clickListener != null) {
-                    boolean finish = clickLeftDrawable(event) && clickTopDrawable(event) && clickRightDrawable(event)
-                                     && clickBottomDrawable(event);
-                }
-            default:
-                isMove = false;
+        // 在event为actionDown时标记用户点击是否在相应的图片范围内
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            resetTouchStatus();
+            if (mDrawableClickListener != null) {
+                mIsLeftTouched = touchLeftDrawable(event);
+                mIsTopTouched = touchTopDrawable(event);
+                mIsRightTouched = touchRightDrawable(event);
+                mIsBottomTouched = touchBottomDrawable(event);
+            }
         }
+
         return super.onTouchEvent(event);
     }
 
-    public void setOnClickListener(OnClickListener l) {
-        if (l == null) {
-            
-        }
-        super.setOnClickListener(l);
-        mOnClickListener = l;
-        new OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                Log.e("CompoundDrawablesTextView", "click");
-
+    @Override
+    public void onClick(View v) {
+        /**
+         * 按照左上右下的顺序响应第一个点击范围内的Drawable
+         */
+        boolean deliver = false;
+        if (mDrawableClickListener != null) {
+            if (mIsLeftTouched) {
+                mDrawableClickListener.onClick(DrawableClickListener.DrawablePosition.LEFT);
             }
+            deliver = mIsAllDrawableTouchedResponse || !mIsLeftTouched;
+            if (deliver && mIsTopTouched) {
+                mDrawableClickListener.onClick(DrawableClickListener.DrawablePosition.TOP);
+            }
+            deliver = mIsAllDrawableTouchedResponse || (deliver && !mIsTopTouched);
+            if (deliver && mIsRightTouched) {
+                mDrawableClickListener.onClick(DrawableClickListener.DrawablePosition.RIGHT);
+            }
+            deliver = mIsAllDrawableTouchedResponse || (deliver && !mIsRightTouched);
+            if (deliver && mIsBottomTouched) {
+                mDrawableClickListener.onClick(DrawableClickListener.DrawablePosition.BOTTOM);
+            }
+        }
+
+        // 若非始终响应OnClickListener，则不执行OnClickListener
+        if (mOnClickListener != null
+            && (mIsAlwaysClick || !(mIsLeftTouched || mIsTopTouched || mIsRightTouched || mIsBottomTouched))) {
+            mOnClickListener.onClick(v);
         }
     }
 
     @Override
+    public void setOnClickListener(OnClickListener l) {
+        mOnClickListener = l;
+    }
+
+    @Override
     protected void finalize() throws Throwable {
-        rightDrawable = null;
-        bottomDrawable = null;
-        leftDrawable = null;
-        topDrawable = null;
+        mRightDrawable = null;
+        mBottomDrawable = null;
+        mLeftDrawable = null;
+        mTopDrawable = null;
         super.finalize();
     }
 
     /**
-     * 点击左边的Drawable
-     * 
-     * @param event
-     * @param leftDrawable
-     * @return
+     * 重置各个图片touch的状态
      */
-    private boolean clickLeftDrawable(MotionEvent event) {
-        if (leftDrawable != null) {
-            // 计算图片点击可响应的范围
-            int drawHeight = leftDrawable.getIntrinsicHeight();
-            int drawWidth = leftDrawable.getIntrinsicWidth();
-            int topBottomDis = (topDrawable == null ? 0 : topDrawable.getIntrinsicHeight())
-                               - (bottomDrawable == null ? 0 : bottomDrawable.getIntrinsicHeight());
-            double imageCenterY = 0.5 * (this.getHeight() + topBottomDis);
-            Rect imageBounds = new Rect(this.getCompoundDrawablePadding() - lazyX, (int)(imageCenterY - 0.5
-                                                                                         * drawHeight - lazyY),
-                                        this.getCompoundDrawablePadding() + drawWidth + lazyX,
-                                        (int)(imageCenterY + 0.5 * drawHeight + lazyY));
-            if (imageBounds.contains((int)event.getX(), (int)event.getY())) {
-                clickListener.onClick(DrawableClickListener.DrawablePosition.LEFT);
-                if (isConsumeEvent) {
-                    event.setAction(MotionEvent.ACTION_CANCEL);
-                    return false;
-                }
-            }
-        }
-        return true;
+    private void resetTouchStatus() {
+        mIsLeftTouched = false;
+        mIsTopTouched = false;
+        mIsRightTouched = false;
+        mIsBottomTouched = false;
     }
 
     /**
-     * 点击上边的Drawable
+     * touch左边的Drawable
      * 
      * @param event
-     * @param leftDrawable
-     * @return
+     * @return 是否在touch范围内
      */
-    private boolean clickTopDrawable(MotionEvent event) {
-        if (topDrawable != null) {
-            int drawHeight = topDrawable.getIntrinsicHeight();
-            int drawWidth = topDrawable.getIntrinsicWidth();
-            int leftRightDis = (leftDrawable == null ? 0 : leftDrawable.getIntrinsicWidth())
-                               - (rightDrawable == null ? 0 : rightDrawable.getIntrinsicWidth());
-            double imageCenterX = 0.5 * (this.getWidth() + leftRightDis);
-            Rect imageBounds = new Rect((int)(imageCenterX - 0.5 * drawWidth - lazyX),
-                                        this.getCompoundDrawablePadding() - lazyY,
-                                        (int)(imageCenterX + 0.5 * drawWidth + lazyX),
-                                        this.getCompoundDrawablePadding() + drawHeight + lazyY);
-            if (imageBounds.contains((int)event.getX(), (int)event.getY())) {
-                clickListener.onClick(DrawableClickListener.DrawablePosition.TOP);
-                if (isConsumeEvent) {
-                    event.setAction(MotionEvent.ACTION_CANCEL);
-                    return false;
-                }
-            }
+    private boolean touchLeftDrawable(MotionEvent event) {
+        if (mLeftDrawable == null) {
+            return false;
         }
-        return true;
+
+        // 计算图片点击可响应的范围
+        int drawHeight = mLeftDrawable.getIntrinsicHeight();
+        int drawWidth = mLeftDrawable.getIntrinsicWidth();
+        int topBottomDis = (mTopDrawable == null ? 0 : mTopDrawable.getIntrinsicHeight())
+                           - (mBottomDrawable == null ? 0 : mBottomDrawable.getIntrinsicHeight());
+        double imageCenterY = 0.5 * (this.getHeight() + topBottomDis);
+        Rect imageBounds = new Rect(this.getCompoundDrawablePadding() - mLazyX,
+                                    (int)(imageCenterY - 0.5 * drawHeight - mLazyY), this.getCompoundDrawablePadding()
+                                                                                     + drawWidth + mLazyX,
+                                    (int)(imageCenterY + 0.5 * drawHeight + mLazyY));
+        return imageBounds.contains((int)event.getX(), (int)event.getY());
     }
 
     /**
-     * 点击右边的Drawable
+     * touch上边的Drawable
      * 
      * @param event
-     * @param leftDrawable
-     * @return
+     * @return 是否在touch范围内
      */
-    private boolean clickRightDrawable(MotionEvent event) {
-        if (rightDrawable != null) {
-            int drawHeight = rightDrawable.getIntrinsicHeight();
-            int drawWidth = rightDrawable.getIntrinsicWidth();
-            int topBottomDis = (topDrawable == null ? 0 : topDrawable.getIntrinsicHeight())
-                               - (bottomDrawable == null ? 0 : bottomDrawable.getIntrinsicHeight());
-            double imageCenterY = 0.5 * (this.getHeight() + topBottomDis);
-            Rect imageBounds = new Rect(this.getWidth() - this.getCompoundDrawablePadding() - drawWidth - lazyX,
-                                        (int)(imageCenterY - 0.5 * drawHeight - lazyY),
-                                        this.getWidth() - this.getCompoundDrawablePadding() + lazyX,
-                                        (int)(imageCenterY + 0.5 * drawHeight + lazyY));
-            if (imageBounds.contains((int)event.getX(), (int)event.getY())) {
-                clickListener.onClick(DrawableClickListener.DrawablePosition.RIGHT);
-                if (isConsumeEvent) {
-                    event.setAction(MotionEvent.ACTION_CANCEL);
-                    return false;
-                }
-            }
+    private boolean touchTopDrawable(MotionEvent event) {
+        if (mTopDrawable == null) {
+            return false;
         }
-        return true;
+
+        int drawHeight = mTopDrawable.getIntrinsicHeight();
+        int drawWidth = mTopDrawable.getIntrinsicWidth();
+        int leftRightDis = (mLeftDrawable == null ? 0 : mLeftDrawable.getIntrinsicWidth())
+                           - (mRightDrawable == null ? 0 : mRightDrawable.getIntrinsicWidth());
+        double imageCenterX = 0.5 * (this.getWidth() + leftRightDis);
+        Rect imageBounds = new Rect((int)(imageCenterX - 0.5 * drawWidth - mLazyX), this.getCompoundDrawablePadding()
+                                                                                    - mLazyY,
+                                    (int)(imageCenterX + 0.5 * drawWidth + mLazyX), this.getCompoundDrawablePadding()
+                                                                                    + drawHeight + mLazyY);
+        return imageBounds.contains((int)event.getX(), (int)event.getY());
     }
 
     /**
-     * 点击下边的Drawable
+     * touch右边的Drawable
      * 
      * @param event
-     * @param leftDrawable
-     * @return
+     * @return 是否在touch范围内
      */
-    private boolean clickBottomDrawable(MotionEvent event) {
-        if (bottomDrawable != null) {
-            int drawHeight = bottomDrawable.getIntrinsicHeight();
-            int drawWidth = bottomDrawable.getIntrinsicWidth();
-            int leftRightDis = (leftDrawable == null ? 0 : leftDrawable.getIntrinsicWidth())
-                               - (rightDrawable == null ? 0 : rightDrawable.getIntrinsicWidth());
-            double imageCenterX = 0.5 * (this.getWidth() + leftRightDis);
-            Rect imageBounds = new Rect((int)(imageCenterX - 0.5 * drawWidth - lazyX),
-                                        this.getHeight() - this.getCompoundDrawablePadding() - drawHeight - lazyY,
-                                        (int)(imageCenterX + 0.5 * drawWidth + lazyX),
-                                        this.getHeight() - this.getCompoundDrawablePadding() + lazyY);
-            if (imageBounds.contains((int)event.getX(), (int)event.getY())) {
-                clickListener.onClick(DrawableClickListener.DrawablePosition.BOTTOM);
-                if (isConsumeEvent) {
-                    event.setAction(MotionEvent.ACTION_CANCEL);
-                    return false;
-                }
-            }
+    private boolean touchRightDrawable(MotionEvent event) {
+        if (mRightDrawable == null) {
+            return false;
         }
-        return true;
+
+        int drawHeight = mRightDrawable.getIntrinsicHeight();
+        int drawWidth = mRightDrawable.getIntrinsicWidth();
+        int topBottomDis = (mTopDrawable == null ? 0 : mTopDrawable.getIntrinsicHeight())
+                           - (mBottomDrawable == null ? 0 : mBottomDrawable.getIntrinsicHeight());
+        double imageCenterY = 0.5 * (this.getHeight() + topBottomDis);
+        Rect imageBounds = new Rect(this.getWidth() - this.getCompoundDrawablePadding() - drawWidth - mLazyX,
+                                    (int)(imageCenterY - 0.5 * drawHeight - mLazyY),
+                                    this.getWidth() - this.getCompoundDrawablePadding() + mLazyX,
+                                    (int)(imageCenterY + 0.5 * drawHeight + mLazyY));
+        return imageBounds.contains((int)event.getX(), (int)event.getY());
+    }
+
+    /**
+     * touch下边的Drawable
+     * 
+     * @param event
+     * @return 是否在touch范围内
+     */
+    private boolean touchBottomDrawable(MotionEvent event) {
+        if (mBottomDrawable == null) {
+            return false;
+        }
+
+        int drawHeight = mBottomDrawable.getIntrinsicHeight();
+        int drawWidth = mBottomDrawable.getIntrinsicWidth();
+        int leftRightDis = (mLeftDrawable == null ? 0 : mLeftDrawable.getIntrinsicWidth())
+                           - (mRightDrawable == null ? 0 : mRightDrawable.getIntrinsicWidth());
+        double imageCenterX = 0.5 * (this.getWidth() + leftRightDis);
+        Rect imageBounds = new Rect((int)(imageCenterX - 0.5 * drawWidth - mLazyX), this.getHeight()
+                                                                                    - this.getCompoundDrawablePadding()
+                                                                                    - drawHeight - mLazyY,
+                                    (int)(imageCenterX + 0.5 * drawWidth + mLazyX), this.getHeight()
+                                                                                    - this.getCompoundDrawablePadding()
+                                                                                    + mLazyY);
+        return imageBounds.contains((int)event.getX(), (int)event.getY());
     }
 
     /**
@@ -237,8 +261,18 @@ public class CompoundDrawablesTextView extends TextView {
      */
     public interface DrawableClickListener {
 
+        /**
+         * 图片的位置
+         */
         public static enum DrawablePosition {
-            TOP, BOTTOM, LEFT, RIGHT
+            /** 图片在TextView的左部 **/
+            LEFT,
+            /** 图片在TextView的上部 **/
+            TOP,
+            /** 图片在TextView的右部 **/
+            RIGHT,
+            /** 图片在TextView的底部 **/
+            BOTTOM
         };
 
         /**
@@ -250,76 +284,94 @@ public class CompoundDrawablesTextView extends TextView {
     }
 
     /**
-     * 得到isConsumeEvent
+     * 是否所有被touch的Drawable都响应事件，true表示都响应，false表示按照左上右下的顺序响应第一个点击范围内的Drawable
      * 
-     * @return the isConsumeEvent
+     * @return the isDeliverEvent
      */
-    public boolean isConsumeEvent() {
-        return isConsumeEvent;
+    public boolean isAllDrawableTouchedResponse() {
+        return mIsAllDrawableTouchedResponse;
     }
 
     /**
-     * 设置isConsumeEvent
+     * 设置是否所有被touch的Drawable都响应事件，true表示都响应，false表示按照左上右下的顺序响应第一个点击范围内的Drawable
      * 
-     * @param isConsumeEvent
+     * @param isAllDrawableTouchedResponse
      */
-    public void setConsumeEvent(boolean isConsumeEvent) {
-        this.isConsumeEvent = isConsumeEvent;
+    public void setAllDrawableTouchedResponse(boolean isAllDrawableTouchedResponse) {
+        this.mIsAllDrawableTouchedResponse = isAllDrawableTouchedResponse;
     }
 
     /**
-     * 得到lazyX
+     * 是否始终响应OnClickListener，true表示响应Drawable后依然响应OnClickListener，false表示响应Drawable后不再响应OnClickListener
+     * 
+     * @return
+     */
+    public boolean isAlwaysClick() {
+        return mIsAlwaysClick;
+    }
+
+    /**
+     * 设置是否始终响应OnClickListener，true表示响应Drawable后依然响应OnClickListener，false表示响应Drawable后不再响应OnClickListener
+     * 
+     * @param mIsAlwaysClick
+     */
+    public void setAlwaysClick(boolean isAlwaysClick) {
+        this.mIsAlwaysClick = isAlwaysClick;
+    }
+
+    /**
+     * 得到Drawable可响应的点击区域x方向允许的误差
      * 
      * @return the lazyX
      */
     public int getLazyX() {
-        return lazyX;
+        return mLazyX;
     }
 
     /**
-     * 设置lazyX
+     * 设置Drawable可响应的点击区域x方向允许的误差
      * 
      * @param lazyX
      */
     public void setLazyX(int lazyX) {
-        this.lazyX = lazyX;
+        this.mLazyX = lazyX;
     }
 
     /**
-     * 得到lazyY
+     * 得到Drawable可响应的点击区域y方向允许的误差
      * 
      * @return the lazyY
      */
     public int getLazyY() {
-        return lazyY;
+        return mLazyY;
     }
 
     /**
-     * 设置lazyY
+     * 设置Drawable可响应的点击区域y方向允许的误差
      * 
      * @param lazyY
      */
     public void setLazyY(int lazyY) {
-        this.lazyY = lazyY;
+        this.mLazyY = lazyY;
     }
 
     /**
-     * 设置lazyX、lazyY
+     * 设置Drawable可响应的点击区域x和y方向允许的误差
      * 
      * @param lazyX
      * @param lazyY
      */
     public void setLazy(int lazyX, int lazyY) {
-        this.lazyX = lazyX;
-        this.lazyY = lazyY;
+        this.mLazyX = lazyX;
+        this.mLazyY = lazyY;
     }
 
     /**
-     * 设置图片点击的监听器
+     * 设置图片点击的listener
      * 
      * @param listener
      */
     public void setDrawableClickListener(DrawableClickListener listener) {
-        this.clickListener = listener;
+        this.mDrawableClickListener = listener;
     }
 }

@@ -20,9 +20,9 @@ import com.trinea.java.common.serviceImpl.SimpleCache;
  * 图片缓存
  * <ul>
  * 使用方法如下
- * <li>调用{@link ImageCache#ImageCache()}或是{@link ImageCache#ImageCache(int)}新建缓存</li>
- * <li>实现{@link ImageCallback}再调用{@link ImageCache#loadDrawable(String, int, View, ImageCallback)}获取图片，关于具体获取图片的方式可以参考
- * {@link ImageCache#loadDrawable(String, int, View, ImageCallback)}的注释</li>
+ * <li>调用{@link #ImageCache()}或是{@link #ImageCache(int)}新建缓存</li>
+ * <li>实现{@link ImageCallback}再调用{@link #loadDrawable(String, int, View, ImageCallback)}获取图片，关于具体获取图片的方式可以参考
+ * {@link #loadDrawable(String, int, View, ImageCallback)}的注释</li>
  * </ul>
  * <ul>
  * 
@@ -42,14 +42,14 @@ public class ImageCache {
     private SimpleCache<String, Drawable> imageCache;
 
     /**
-     * 图片缓存，缓存大小为{@link ImageCache#MAX_CACHE_SIZE}
+     * 图片缓存，缓存大小为{@link #MAX_CACHE_SIZE}
      */
     public ImageCache(){
         imageCache = new SimpleCache<String, Drawable>(MAX_CACHE_SIZE, -1, new RemoveTypeEnterTimeFirst<Drawable>());
     }
 
     /**
-     * 图片缓存，若maxCacheSize小于等于0，则采取默认值{@link ImageCache#MAX_CACHE_SIZE}
+     * 图片缓存，若maxCacheSize小于等于0，则采取默认值{@link #MAX_CACHE_SIZE}
      * 
      * @param maxCacheSize 缓存大小
      */
