@@ -28,7 +28,7 @@
     <TextView
         android:id="@+id/drop_down_to_refresh_list_text"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="@color/drop_down_to_refresh_list_header_font_color"
+        android:textColor="@color/drop_down_to_refresh_list_refresh_layout_font_color"
         android:textStyle="bold"
         android:paddingTop="5dp"
         android:layout_width="fill_parent"
@@ -40,7 +40,7 @@
         android:layout_below="@+id/drop_down_to_refresh_list_text"
         android:visibility="gone"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textColor="@color/drop_down_to_refresh_list_header_font_color"
+        android:textColor="@color/drop_down_to_refresh_list_refresh_layout_font_color"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"

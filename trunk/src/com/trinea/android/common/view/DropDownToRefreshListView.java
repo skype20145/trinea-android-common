@@ -1,6 +1,7 @@
 package com.trinea.android.common.view;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -10,6 +11,7 @@ import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -38,6 +40,15 @@ import com.trinea.android.common.R;
  */
 public class DropDownToRefreshListView extends ListView implements OnScrollListener {
 
+    /** 是否是下拉刷新样式 **/
+    private boolean isDropDownToRefreshStyle = true;
+    /** 是否是加载更多样式 **/
+    private boolean isLoadMoreStyle          = true;
+    /** 是否自动加载更多 **/
+    private boolean isAutoLoadMore           = false;
+    /** 还有更多标识 **/
+    private boolean hasMore                  = true;
+
     /**
      * 刷新的状态
      */
@@ -58,35 +69,36 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
     private static final int   HEADER_HEIGHT_UPPER_LEVEL = 10;
 
     /** 刷新事件 **/
-    private OnRefreshListener  mOnRefreshListener;
-
-    private OnScrollListener   mOnScrollListener;
+    private OnRefreshListener  onRefreshListener;
+    private OnScrollListener   onScrollListener;
 
     /** 需要的View **/
-    private RelativeLayout     mRefreshViewLayout;
-    private TextView           mRefreshViewTipsText;
-    private ImageView          mRefreshViewImage;
-    private ProgressBar        mRefreshViewProgress;
-    private TextView           mRefreshViewLastUpdatedText;
+    private RelativeLayout     refreshViewLayout;
+    private TextView           refreshViewTipsText;
+    private ImageView          refreshViewImage;
+    private ProgressBar        refreshViewProgress;
+    private TextView           refreshViewLastUpdatedText;
+    private RelativeLayout     loadMoreLayout;
+    private Button             loadMoreButton;
 
     /** 当前的滚动状态 **/
-    private int                mCurrentScrollState;
+    private int                currentScrollState;
     /** 当前的刷新状态 **/
-    private RefreshStatusEnum  mCurrentRefreshState;
+    private RefreshStatusEnum  currentRefreshState;
 
     /** 正向翻转的animation **/
-    private RotateAnimation    mFlipAnimation;
+    private RotateAnimation    flipAnimation;
     /** 反向翻转的animation **/
-    private RotateAnimation    mReverseFlipAnimation;
+    private RotateAnimation    reverseFlipAnimation;
 
     /** header(刷新View layout)的初始高度 **/
-    private int                mHeaderOriginalHeight;
+    private int                headerOriginalHeight;
     /** header(刷新View layout)的初始top padding **/
-    private int                mHeaderOriginalTopPadding;
+    private int                headerOriginalTopPadding;
     /** 用户手指刚接触屏幕时touch的点y坐标 **/
-    private float              mActionDownPointY;
+    private float              actionDownPointY;
     /** 是否反弹，滑动到顶部则标记为true **/
-    private boolean            mIsBounceHack;
+    private boolean            isBounceHack;
 
     public DropDownToRefreshListView(Context context){
         super(context);
@@ -95,44 +107,84 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
 
     public DropDownToRefreshListView(Context context, AttributeSet attrs){
         super(context, attrs);
+        getAttrs(context, attrs);
         init(context);
     }
 
     public DropDownToRefreshListView(Context context, AttributeSet attrs, int defStyle){
         super(context, attrs, defStyle);
+        getAttrs(context, attrs);
         init(context);
     }
 
     private void init(Context context) {
-        mFlipAnimation = new RotateAnimation(0, 180, RotateAnimation.RELATIVE_TO_SELF, 0.5f,
-                                             RotateAnimation.RELATIVE_TO_SELF, 0.5f);
-        mFlipAnimation.setInterpolator(new LinearInterpolator());
-        mFlipAnimation.setDuration(250);
-        mFlipAnimation.setFillAfter(true);
-        mReverseFlipAnimation = new RotateAnimation(-180, 0, RotateAnimation.RELATIVE_TO_SELF, 0.5f,
-                                                    RotateAnimation.RELATIVE_TO_SELF, 0.5f);
-        mReverseFlipAnimation.setInterpolator(new LinearInterpolator());
-        mReverseFlipAnimation.setDuration(250);
-        mReverseFlipAnimation.setFillAfter(true);
-
         LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        mRefreshViewLayout = (RelativeLayout)inflater.inflate(R.layout.drop_down_to_refresh_list_header, this, false);
-        mRefreshViewTipsText = (TextView)mRefreshViewLayout.findViewById(R.id.drop_down_to_refresh_list_text);
-        mRefreshViewImage = (ImageView)mRefreshViewLayout.findViewById(R.id.drop_down_to_refresh_list_image);
-        mRefreshViewProgress = (ProgressBar)mRefreshViewLayout.findViewById(R.id.drop_down_to_refresh_list_progress);
-        mRefreshViewLastUpdatedText = (TextView)mRefreshViewLayout.findViewById(R.id.drop_down_to_refresh_list_last_updated_text);
-        mRefreshViewImage.setMinimumHeight(50);
-        mRefreshViewLayout.setOnClickListener(new OnClickRefreshListener());
-        mRefreshViewTipsText.setText(R.string.drop_down_to_refresh_list_refresh_view_tips);
-        addHeaderView(mRefreshViewLayout);
+        if (isDropDownToRefreshStyle) {
+            initDropDownToRefresh(context, inflater);
+        }
+        if (isLoadMoreStyle) {
+            initLoadMore(context, inflater);
+        }
+    }
+
+    /**
+     * 加载更多样式初始化
+     * 
+     * @param context
+     * @param inflater
+     */
+    private void initLoadMore(Context context, LayoutInflater inflater) {
+        loadMoreLayout = (RelativeLayout)inflater.inflate(R.layout.drop_down_to_refresh_list_bottom, this, false);
+        loadMoreButton = (Button)loadMoreLayout.findViewById(R.id.drop_down_to_refresh_list_more);
+        loadMoreButton.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+        loadMoreButton.setDrawingCacheBackgroundColor(0);
+        addFooterView(loadMoreLayout);
+    }
+
+    /**
+     * 得到加载更多的Button
+     * 
+     * @return
+     */
+    public Button getLoadMoreButton() {
+        return loadMoreButton;
+    }
+
+    /**
+     * 下拉刷新样式初始化
+     * 
+     * @param context
+     * @param inflater
+     */
+    private void initDropDownToRefresh(Context context, LayoutInflater inflater) {
+        flipAnimation = new RotateAnimation(0, 180, RotateAnimation.RELATIVE_TO_SELF, 0.5f,
+                                            RotateAnimation.RELATIVE_TO_SELF, 0.5f);
+        flipAnimation.setInterpolator(new LinearInterpolator());
+        flipAnimation.setDuration(250);
+        flipAnimation.setFillAfter(true);
+        reverseFlipAnimation = new RotateAnimation(-180, 0, RotateAnimation.RELATIVE_TO_SELF, 0.5f,
+                                                   RotateAnimation.RELATIVE_TO_SELF, 0.5f);
+        reverseFlipAnimation.setInterpolator(new LinearInterpolator());
+        reverseFlipAnimation.setDuration(250);
+        reverseFlipAnimation.setFillAfter(true);
+
+        refreshViewLayout = (RelativeLayout)inflater.inflate(R.layout.drop_down_to_refresh_list_header, this, false);
+        refreshViewTipsText = (TextView)refreshViewLayout.findViewById(R.id.drop_down_to_refresh_list_text);
+        refreshViewImage = (ImageView)refreshViewLayout.findViewById(R.id.drop_down_to_refresh_list_image);
+        refreshViewProgress = (ProgressBar)refreshViewLayout.findViewById(R.id.drop_down_to_refresh_list_progress);
+        refreshViewLastUpdatedText = (TextView)refreshViewLayout.findViewById(R.id.drop_down_to_refresh_list_last_updated_text);
+        refreshViewImage.setMinimumHeight(50);
+        refreshViewLayout.setOnClickListener(new OnClickRefreshListener());
+        refreshViewTipsText.setText(R.string.drop_down_to_refresh_list_refresh_view_tips);
+        addHeaderView(refreshViewLayout);
 
         // 设置OnScrollListener为当前的listener
         super.setOnScrollListener(this);
 
-        measureView(mRefreshViewLayout);
-        mHeaderOriginalHeight = mRefreshViewLayout.getMeasuredHeight();
-        mHeaderOriginalTopPadding = mRefreshViewLayout.getPaddingTop();
-        mCurrentRefreshState = RefreshStatusEnum.CLICK_TO_REFRESH;
+        measureView(refreshViewLayout);
+        headerOriginalHeight = refreshViewLayout.getMeasuredHeight();
+        headerOriginalTopPadding = refreshViewLayout.getPaddingTop();
+        currentRefreshState = RefreshStatusEnum.CLICK_TO_REFRESH;
     }
 
     @Override
@@ -143,105 +195,127 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
     @Override
     public void setAdapter(ListAdapter adapter) {
         super.setAdapter(adapter);
-        setSecondPositionVisible();
+        if (isDropDownToRefreshStyle) {
+            setSecondPositionVisible();
+        }
     }
 
     @Override
     public void setOnScrollListener(AbsListView.OnScrollListener listener) {
-        mOnScrollListener = listener;
+        onScrollListener = listener;
     }
 
     /**
-     * 设置刷新事件器
+     * 设置刷新事件
      * 
      * @param onRefreshListener
      */
     public void setOnRefreshListener(OnRefreshListener onRefreshListener) {
-        mOnRefreshListener = onRefreshListener;
+        this.onRefreshListener = onRefreshListener;
+    }
+
+    /**
+     * 设置加载更多事件
+     * 
+     * @param onLoadMoreListener
+     */
+    public void setOnLoadMoreListener(OnClickListener onLoadMoreListener) {
+        if (isLoadMoreStyle) {
+            loadMoreButton.setOnClickListener(onLoadMoreListener);
+        }
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        mIsBounceHack = false;
+        if (isDropDownToRefreshStyle) {
+            isBounceHack = false;
 
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                mActionDownPointY = event.getY();
-                break;
-            case MotionEvent.ACTION_MOVE:
-                adjustHeaderPadding(event);
-                break;
-            case MotionEvent.ACTION_UP:
-                if (!isVerticalScrollBarEnabled()) {
-                    setVerticalScrollBarEnabled(true);
-                }
-                if (getFirstVisiblePosition() == 0 && mCurrentRefreshState != RefreshStatusEnum.REFRESHING) {
-                    switch (mCurrentRefreshState) {
-                        case CLICK_TO_REFRESH:
-                            setStatusClickToRefresh();
-                            break;
-                        case RELEASE_TO_REFRESH:
-                            onRefresh();
-                            break;
-                        case DROP_DOWN_TO_REFRESH:
-                            setStatusClickToRefresh();
-                            setSecondPositionVisible();
-                            break;
-                        default:
-                            break;
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    actionDownPointY = event.getY();
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    adjustHeaderPadding(event);
+                    break;
+                case MotionEvent.ACTION_UP:
+                    if (!isVerticalScrollBarEnabled()) {
+                        setVerticalScrollBarEnabled(true);
                     }
-                }
-                break;
+                    if (getFirstVisiblePosition() == 0 && currentRefreshState != RefreshStatusEnum.REFRESHING) {
+                        switch (currentRefreshState) {
+                            case CLICK_TO_REFRESH:
+                                setStatusClickToRefresh();
+                                break;
+                            case RELEASE_TO_REFRESH:
+                                onRefresh();
+                                break;
+                            case DROP_DOWN_TO_REFRESH:
+                                setStatusClickToRefresh();
+                                setSecondPositionVisible();
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    break;
+            }
         }
         return super.onTouchEvent(event);
     }
 
     @Override
     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-        /**
-         * ListView为SCROLL_STATE_TOUCH_SCROLL状态(按着不放滚动中)并且刷新状态不为REFRESHING
-         * a. 刷新对应的item可见时，若刷新layout高度超出范围，则置刷新状态为RELEASE_TO_REFRESH；
-         * 若刷新layout高度低于高度范围，则置刷新状态为DROP_DOWN_TO_REFRESH
-         * b. 刷新对应的item不可见，重置header
-         * ListView为SCROLL_STATE_FLING状态(松手滚动中)
-         * a. 若刷新对应的item可见并且刷新状态不为REFRESHING，设置position为1的(即第二个)item可见
-         * b. 若反弹回来，设置position为1的(即第二个)item可见
-         */
-        if (mCurrentScrollState == SCROLL_STATE_TOUCH_SCROLL && mCurrentRefreshState != RefreshStatusEnum.REFRESHING) {
-            if (firstVisibleItem == 0) {
-                mRefreshViewImage.setVisibility(View.VISIBLE);
-                if (mRefreshViewLayout.getBottom() >= mHeaderOriginalHeight + HEADER_HEIGHT_UPPER_LEVEL
-                    || mRefreshViewLayout.getTop() >= 0) {
-                    setStatusReleaseToRefresh();
-                } else if (mRefreshViewLayout.getBottom() < mHeaderOriginalHeight + HEADER_HEIGHT_UPPER_LEVEL) {
-                    setStatusDropDownToRefresh();
+        if (isDropDownToRefreshStyle) {
+            /**
+             * ListView为SCROLL_STATE_TOUCH_SCROLL状态(按着不放滚动中)并且刷新状态不为REFRESHING a.
+             * 刷新对应的item可见时，若刷新layout高度超出范围，则置刷新状态为RELEASE_TO_REFRESH； 若刷新layout高度低于高度范围，则置刷新状态为DROP_DOWN_TO_REFRESH b.
+             * 刷新对应的item不可见，重置header ListView为SCROLL_STATE_FLING状态(松手滚动中) a.
+             * 若刷新对应的item可见并且刷新状态不为REFRESHING，设置position为1的(即第二个)item可见 b. 若反弹回来，设置position为1的(即第二个)item可见
+             */
+            if (currentScrollState == SCROLL_STATE_TOUCH_SCROLL && currentRefreshState != RefreshStatusEnum.REFRESHING) {
+                if (firstVisibleItem == 0) {
+                    refreshViewImage.setVisibility(View.VISIBLE);
+                    if (refreshViewLayout.getBottom() >= headerOriginalHeight + HEADER_HEIGHT_UPPER_LEVEL
+                        || refreshViewLayout.getTop() >= 0) {
+                        setStatusReleaseToRefresh();
+                    } else if (refreshViewLayout.getBottom() < headerOriginalHeight + HEADER_HEIGHT_UPPER_LEVEL) {
+                        setStatusDropDownToRefresh();
+                    }
+                } else {
+                    setStatusClickToRefresh();
                 }
-            } else {
-                setStatusClickToRefresh();
+            } else if (currentScrollState == SCROLL_STATE_FLING && firstVisibleItem == 0
+                       && currentRefreshState != RefreshStatusEnum.REFRESHING) {
+                setSecondPositionVisible();
+                isBounceHack = true;
+            } else if (currentScrollState == SCROLL_STATE_FLING && isBounceHack) {
+                setSecondPositionVisible();
             }
-        } else if (mCurrentScrollState == SCROLL_STATE_FLING && firstVisibleItem == 0
-                   && mCurrentRefreshState != RefreshStatusEnum.REFRESHING) {
-            setSecondPositionVisible();
-            mIsBounceHack = true;
-        } else if (mCurrentScrollState == SCROLL_STATE_FLING && mIsBounceHack) {
-            setSecondPositionVisible();
         }
 
-        if (mOnScrollListener != null) {
-            mOnScrollListener.onScroll(view, firstVisibleItem, visibleItemCount, totalItemCount);
+        // 当为加载更多样式并且设置了自动加载更多且含有更多元素时到达屏幕底时自动加载更多
+        if (isLoadMoreStyle && isAutoLoadMore && hasMore) {
+            if (firstVisibleItem > 0 && totalItemCount > 0 && (firstVisibleItem + visibleItemCount == totalItemCount)) {
+                loadMoreButton.performClick();
+            }
+        }
+        if (onScrollListener != null) {
+            onScrollListener.onScroll(view, firstVisibleItem, visibleItemCount, totalItemCount);
         }
     }
 
     @Override
     public void onScrollStateChanged(AbsListView view, int scrollState) {
-        mCurrentScrollState = scrollState;
+        if (isDropDownToRefreshStyle) {
+            currentScrollState = scrollState;
 
-        if (mCurrentScrollState == SCROLL_STATE_IDLE) {
-            mIsBounceHack = false;
+            if (currentScrollState == SCROLL_STATE_IDLE) {
+                isBounceHack = false;
+            }
         }
 
-        if (mOnScrollListener != null) {
-            mOnScrollListener.onScrollStateChanged(view, scrollState);
+        if (onScrollListener != null) {
+            onScrollListener.onScrollStateChanged(view, scrollState);
         }
     }
 
@@ -249,16 +323,18 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
      * 准备刷新
      */
     public void onRefreshBegin() {
-        setStatusRefreshing();
+        if (isDropDownToRefreshStyle) {
+            setStatusRefreshing();
+        }
     }
 
     /**
      * 刷新
      */
     public void onRefresh() {
-        if (mOnRefreshListener != null) {
+        if (isDropDownToRefreshStyle && onRefreshListener != null) {
             onRefreshBegin();
-            mOnRefreshListener.onRefresh();
+            onRefreshListener.onRefresh();
         }
     }
 
@@ -268,19 +344,23 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
      * @param lastUpdatedText 上次更新信息，若为null，不显示
      */
     public void onRefreshComplete(CharSequence lastUpdatedText) {
-        setLastUpdatedText(lastUpdatedText);
-        onRefreshComplete();
+        if (isDropDownToRefreshStyle) {
+            setLastUpdatedText(lastUpdatedText);
+            onRefreshComplete();
+        }
     }
 
     /**
      * 刷新结束，恢复View状态
      */
     public void onRefreshComplete() {
-        setStatusClickToRefresh();
+        if (isDropDownToRefreshStyle) {
+            setStatusClickToRefresh();
 
-        if (mRefreshViewLayout.getBottom() > 0) {
-            invalidateViews();
-            setSecondPositionVisible();
+            if (refreshViewLayout.getBottom() > 0) {
+                invalidateViews();
+                setSecondPositionVisible();
+            }
         }
     }
 
@@ -292,7 +372,7 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
 
         @Override
         public void onClick(View v) {
-            if (mCurrentRefreshState != RefreshStatusEnum.REFRESHING) {
+            if (currentRefreshState != RefreshStatusEnum.REFRESHING) {
                 onRefresh();
             }
         }
@@ -327,28 +407,84 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
      * @param lastUpdatedText 上次更新信息，若为null，不显示
      */
     public void setLastUpdatedText(CharSequence lastUpdatedText) {
-        if (lastUpdatedText == null) {
-            mRefreshViewLastUpdatedText.setVisibility(View.GONE);
-        } else {
-            mRefreshViewLastUpdatedText.setVisibility(View.VISIBLE);
-            mRefreshViewLastUpdatedText.setText(lastUpdatedText);
+        if (isDropDownToRefreshStyle) {
+            if (lastUpdatedText == null) {
+                refreshViewLastUpdatedText.setVisibility(View.GONE);
+            } else {
+                refreshViewLastUpdatedText.setVisibility(View.VISIBLE);
+                refreshViewLastUpdatedText.setText(lastUpdatedText);
+            }
         }
+    }
+
+    /**
+     * 得到是否是下拉刷新样式
+     * 
+     * @return
+     */
+    public boolean isDropDownToRefreshStyle() {
+        return isDropDownToRefreshStyle;
+    }
+
+    /**
+     * 得到是否是加载更多样式
+     * 
+     * @return
+     */
+    public boolean isLoadMoreStyle() {
+        return isLoadMoreStyle;
+    }
+
+    /**
+     * 得到是否自动加载更多
+     * 
+     * @return
+     */
+    public boolean isAutoLoadMore() {
+        return isAutoLoadMore;
+    }
+
+    /**
+     * 设置是否自动加载更多
+     * 
+     * @param isAutoLoadMore
+     */
+    public void setAutoLoadMore(boolean isAutoLoadMore) {
+        this.isAutoLoadMore = isAutoLoadMore;
+    }
+
+    /**
+     * 设置还有更多
+     * 
+     * @param hasMore
+     */
+    public void setHasMore(boolean hasMore) {
+        this.hasMore = hasMore;
+    }
+
+    /**
+     * 得到是否有更多
+     * 
+     * @return
+     */
+    public boolean isHasMore() {
+        return hasMore;
     }
 
     /**
      * 设置为CLICK_TO_REFRESH状态
      */
     private void setStatusClickToRefresh() {
-        if (mCurrentRefreshState != RefreshStatusEnum.CLICK_TO_REFRESH) {
+        if (currentRefreshState != RefreshStatusEnum.CLICK_TO_REFRESH) {
             resetHeaderPadding();
 
-            mRefreshViewImage.clearAnimation();
-            mRefreshViewImage.setImageResource(R.drawable.drop_down_to_refresh_list_arrow);
-            mRefreshViewImage.setVisibility(View.GONE);
-            mRefreshViewProgress.setVisibility(View.GONE);
-            mRefreshViewTipsText.setText(R.string.drop_down_to_refresh_list_refresh_view_tips);
+            refreshViewImage.clearAnimation();
+            refreshViewImage.setImageResource(R.drawable.drop_down_to_refresh_list_arrow);
+            refreshViewImage.setVisibility(View.GONE);
+            refreshViewProgress.setVisibility(View.GONE);
+            refreshViewTipsText.setText(R.string.drop_down_to_refresh_list_refresh_view_tips);
 
-            mCurrentRefreshState = RefreshStatusEnum.CLICK_TO_REFRESH;
+            currentRefreshState = RefreshStatusEnum.CLICK_TO_REFRESH;
         }
     }
 
@@ -356,21 +492,21 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
      * 设置为DROP_DOWN_TO_REFRESH状态
      */
     private void setStatusDropDownToRefresh() {
-        if (mCurrentRefreshState != RefreshStatusEnum.DROP_DOWN_TO_REFRESH) {
-            mRefreshViewImage.setVisibility(View.VISIBLE);
+        if (currentRefreshState != RefreshStatusEnum.DROP_DOWN_TO_REFRESH) {
+            refreshViewImage.setVisibility(View.VISIBLE);
             // CLICK_TO_REFRESH不需要启动动画
-            if (mCurrentRefreshState != RefreshStatusEnum.CLICK_TO_REFRESH) {
-                mRefreshViewImage.clearAnimation();
-                mRefreshViewImage.startAnimation(mReverseFlipAnimation);
+            if (currentRefreshState != RefreshStatusEnum.CLICK_TO_REFRESH) {
+                refreshViewImage.clearAnimation();
+                refreshViewImage.startAnimation(reverseFlipAnimation);
             }
-            mRefreshViewProgress.setVisibility(View.GONE);
-            mRefreshViewTipsText.setText(R.string.drop_down_to_refresh_list_pull_tips);
+            refreshViewProgress.setVisibility(View.GONE);
+            refreshViewTipsText.setText(R.string.drop_down_to_refresh_list_pull_tips);
 
             if (isVerticalFadingEdgeEnabled()) {
                 setVerticalScrollBarEnabled(false);
             }
 
-            mCurrentRefreshState = RefreshStatusEnum.DROP_DOWN_TO_REFRESH;
+            currentRefreshState = RefreshStatusEnum.DROP_DOWN_TO_REFRESH;
         }
     }
 
@@ -378,14 +514,14 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
      * 设置为RELEASE_TO_REFRESH状态
      */
     private void setStatusReleaseToRefresh() {
-        if (mCurrentRefreshState != RefreshStatusEnum.RELEASE_TO_REFRESH) {
-            mRefreshViewImage.setVisibility(View.VISIBLE);
-            mRefreshViewImage.clearAnimation();
-            mRefreshViewImage.startAnimation(mFlipAnimation);
-            mRefreshViewProgress.setVisibility(View.GONE);
-            mRefreshViewTipsText.setText(R.string.drop_down_to_refresh_list_release_tips);
+        if (currentRefreshState != RefreshStatusEnum.RELEASE_TO_REFRESH) {
+            refreshViewImage.setVisibility(View.VISIBLE);
+            refreshViewImage.clearAnimation();
+            refreshViewImage.startAnimation(flipAnimation);
+            refreshViewProgress.setVisibility(View.GONE);
+            refreshViewTipsText.setText(R.string.drop_down_to_refresh_list_release_tips);
 
-            mCurrentRefreshState = RefreshStatusEnum.RELEASE_TO_REFRESH;
+            currentRefreshState = RefreshStatusEnum.RELEASE_TO_REFRESH;
         }
     }
 
@@ -393,15 +529,15 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
      * 设置为REFRESHING状态
      */
     private void setStatusRefreshing() {
-        if (mCurrentRefreshState != RefreshStatusEnum.REFRESHING) {
+        if (currentRefreshState != RefreshStatusEnum.REFRESHING) {
             resetHeaderPadding();
 
-            mRefreshViewImage.setVisibility(View.GONE);
-            mRefreshViewImage.setImageDrawable(null);
-            mRefreshViewProgress.setVisibility(View.VISIBLE);
-            mRefreshViewTipsText.setText(R.string.drop_down_to_refresh_list_refreshing_tips);
+            refreshViewImage.setVisibility(View.GONE);
+            refreshViewImage.setImageDrawable(null);
+            refreshViewProgress.setVisibility(View.VISIBLE);
+            refreshViewTipsText.setText(R.string.drop_down_to_refresh_list_refreshing_tips);
 
-            mCurrentRefreshState = RefreshStatusEnum.REFRESHING;
+            currentRefreshState = RefreshStatusEnum.REFRESHING;
             setSelection(0);
         }
     }
@@ -417,11 +553,10 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
          */
         int pointerCount = ev.getHistorySize();
         for (int i = 0; i < pointerCount; i++) {
-            if (mCurrentRefreshState == RefreshStatusEnum.RELEASE_TO_REFRESH) {
-                mRefreshViewLayout.setPadding(mRefreshViewLayout.getPaddingLeft(),
-                                              (int)(((ev.getHistoricalY(i) - mActionDownPointY) - mHeaderOriginalHeight) / HEADER_PADDING_RATE),
-                                              mRefreshViewLayout.getPaddingRight(),
-                                              mRefreshViewLayout.getPaddingBottom());
+            if (currentRefreshState == RefreshStatusEnum.RELEASE_TO_REFRESH) {
+                refreshViewLayout.setPadding(refreshViewLayout.getPaddingLeft(),
+                                             (int)(((ev.getHistoricalY(i) - actionDownPointY) - headerOriginalHeight) / HEADER_PADDING_RATE),
+                                             refreshViewLayout.getPaddingRight(), refreshViewLayout.getPaddingBottom());
             }
         }
     }
@@ -430,8 +565,8 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
      * 重置header的padding
      */
     private void resetHeaderPadding() {
-        mRefreshViewLayout.setPadding(mRefreshViewLayout.getPaddingLeft(), mHeaderOriginalTopPadding,
-                                      mRefreshViewLayout.getPaddingRight(), mRefreshViewLayout.getPaddingBottom());
+        refreshViewLayout.setPadding(refreshViewLayout.getPaddingLeft(), headerOriginalTopPadding,
+                                     refreshViewLayout.getPaddingRight(), refreshViewLayout.getPaddingBottom());
     }
 
     /**
@@ -454,5 +589,20 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
             childHeightSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
         }
         child.measure(childWidthSpec, childHeightSpec);
+    }
+
+    /**
+     * 得到属性
+     * 
+     * @param context
+     * @param attrs
+     */
+    private void getAttrs(Context context, AttributeSet attrs) {
+        TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.drop_down_to_refresh_list_attr);
+        isDropDownToRefreshStyle = ta.getBoolean(R.styleable.drop_down_to_refresh_list_attr_isDropDownToRefreshStyle,
+                                                 true);
+        isLoadMoreStyle = ta.getBoolean(R.styleable.drop_down_to_refresh_list_attr_isLoadMoreStyle, true);
+        isAutoLoadMore = ta.getBoolean(R.styleable.drop_down_to_refresh_list_attr_isAutoLoadMore, false);
+        ta.recycle();
     }
 }
