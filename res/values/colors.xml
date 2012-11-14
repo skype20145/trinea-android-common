@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- drop down to refresh list header字体颜色 -->
-    <color name="drop_down_to_refresh_list_header_font_color">#FFFFFF</color>
+    <color name="drop_down_to_refresh_list_refresh_layout_font_color">#000000</color>
+    <!-- drop down to refresh list bottom字体颜色 -->
+    <color name="drop_down_to_refresh_list_more_layout_font_color">#FFFFFF</color>
 </resources>

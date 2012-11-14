@@ -5,9 +5,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 
@@ -99,7 +101,8 @@ public class ImageUtils {
         InputStream stream = null;
         try {
             URL url = new URL(imageUrl);
-            stream = (InputStream)url.getContent();
+            URLConnection con = url.openConnection();
+            stream = con.getInputStream();
         } catch (MalformedURLException e) {
             closeInputStream(stream);
             throw new RuntimeException("MalformedURLException occurred. ", e);
@@ -134,6 +137,36 @@ public class ImageUtils {
         Bitmap b = BitmapFactory.decodeStream(stream);
         closeInputStream(stream);
         return b;
+    }
+
+    /**
+     * 缩放图片
+     * 
+     * @param org 原图片
+     * @param newWidth 新图片的宽度
+     * @param newHeight 新图片的高度
+     * @return
+     */
+    public static Bitmap scaleImageTo(Bitmap org, int newWidth, int newHeight) {
+        return scaleImage(org, (float)newWidth / org.getWidth(), (float)newHeight / org.getHeight());
+    }
+
+    /**
+     * 缩放图片
+     * 
+     * @param org 原图片
+     * @param scaleWidth 宽度缩放比例
+     * @param scaleHeight 高度缩放比例
+     * @return
+     */
+    public static Bitmap scaleImage(Bitmap org, float scaleWidth, float scaleHeight) {
+        if (org == null) {
+            return null;
+        }
+
+        Matrix matrix = new Matrix();
+        matrix.postScale(scaleWidth, scaleHeight);
+        return Bitmap.createBitmap(org, 0, 0, org.getWidth(), org.getHeight(), matrix, true);
     }
 
     /**
