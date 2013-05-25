@@ -3,6 +3,7 @@ package com.trinea.android.common.view;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -79,7 +80,11 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
     private ProgressBar        refreshViewProgress;
     private TextView           refreshViewLastUpdatedText;
     private RelativeLayout     loadMoreLayout;
+    private ProgressBar        loadMoreProgress;
     private Button             loadMoreButton;
+
+    /** whether show loading progress when loading more **/
+    private boolean            isShowLoadMoreProgress    = false;
 
     /** 当前的滚动状态 **/
     private int                currentScrollState;
@@ -100,6 +105,8 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
     /** 是否反弹，滑动到顶部则标记为true **/
     private boolean            isBounceHack;
 
+    private boolean            isNeedLoadMore;
+
     public DropDownToRefreshListView(Context context){
         super(context);
         init(context);
@@ -118,13 +125,16 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
     }
 
     private void init(Context context) {
-        LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         if (isDropDownToRefreshStyle) {
+            LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             initDropDownToRefresh(context, inflater);
         }
         if (isLoadMoreStyle) {
+            LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             initLoadMore(context, inflater);
         }
+        isNeedLoadMore = false;
+        super.setOnScrollListener(this);
     }
 
     /**
@@ -134,10 +144,13 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
      * @param inflater
      */
     private void initLoadMore(Context context, LayoutInflater inflater) {
-        loadMoreLayout = (RelativeLayout)inflater.inflate(R.layout.drop_down_to_refresh_list_bottom, this, false);
+        loadMoreLayout = (RelativeLayout)inflater.inflate(R.layout.drop_down_to_refresh_list_bottom,
+                                                          this, false);
         loadMoreButton = (Button)loadMoreLayout.findViewById(R.id.drop_down_to_refresh_list_more);
         loadMoreButton.setBackgroundColor(android.graphics.Color.TRANSPARENT);
         loadMoreButton.setDrawingCacheBackgroundColor(0);
+
+        loadMoreProgress = (ProgressBar)loadMoreLayout.findViewById(R.id.drop_down_to_refresh_list_more_progress);
         addFooterView(loadMoreLayout);
     }
 
@@ -168,7 +181,8 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
         reverseFlipAnimation.setDuration(250);
         reverseFlipAnimation.setFillAfter(true);
 
-        refreshViewLayout = (RelativeLayout)inflater.inflate(R.layout.drop_down_to_refresh_list_header, this, false);
+        refreshViewLayout = (RelativeLayout)inflater.inflate(R.layout.drop_down_to_refresh_list_header,
+                                                             this, false);
         refreshViewTipsText = (TextView)refreshViewLayout.findViewById(R.id.drop_down_to_refresh_list_text);
         refreshViewImage = (ImageView)refreshViewLayout.findViewById(R.id.drop_down_to_refresh_list_image);
         refreshViewProgress = (ProgressBar)refreshViewLayout.findViewById(R.id.drop_down_to_refresh_list_progress);
@@ -225,6 +239,24 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
         }
     }
 
+    /**
+     * get whether show loading progress when loading more
+     * 
+     * @return
+     */
+    public boolean isShowLoadMoreProgress() {
+        return isShowLoadMoreProgress;
+    }
+
+    /**
+     * set whether show loading progress when loading more
+     * 
+     * @param isShowLoadMoreProgress
+     */
+    public void setShowLoadMoreProgress(boolean isShowLoadMoreProgress) {
+        this.isShowLoadMoreProgress = isShowLoadMoreProgress;
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (isDropDownToRefreshStyle) {
@@ -241,7 +273,8 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
                     if (!isVerticalScrollBarEnabled()) {
                         setVerticalScrollBarEnabled(true);
                     }
-                    if (getFirstVisiblePosition() == 0 && currentRefreshState != RefreshStatusEnum.REFRESHING) {
+                    if (getFirstVisiblePosition() == 0
+                        && currentRefreshState != RefreshStatusEnum.REFRESHING) {
                         switch (currentRefreshState) {
                             case CLICK_TO_REFRESH:
                                 setStatusClickToRefresh();
@@ -260,11 +293,24 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
                     break;
             }
         }
+
+        // 当为加载更多样式并且设置了自动加载更多且含有更多元素时到达屏幕底时自动加载更多
+        if (isLoadMoreStyle && isAutoLoadMore && hasMore && isNeedLoadMore) {
+            switch (event.getAction()) {
+                // case MotionEvent.ACTION_MOVE:
+                case MotionEvent.ACTION_UP:
+                    loadMoreButton.performClick();
+                    isNeedLoadMore = false;
+                    break;
+            }
+        }
+
         return super.onTouchEvent(event);
     }
 
     @Override
-    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
+                         int totalItemCount) {
         if (isDropDownToRefreshStyle) {
             /**
              * ListView为SCROLL_STATE_TOUCH_SCROLL状态(按着不放滚动中)并且刷新状态不为REFRESHING a.
@@ -272,13 +318,16 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
              * 刷新对应的item不可见，重置header ListView为SCROLL_STATE_FLING状态(松手滚动中) a.
              * 若刷新对应的item可见并且刷新状态不为REFRESHING，设置position为1的(即第二个)item可见 b. 若反弹回来，设置position为1的(即第二个)item可见
              */
-            if (currentScrollState == SCROLL_STATE_TOUCH_SCROLL && currentRefreshState != RefreshStatusEnum.REFRESHING) {
+            if (currentScrollState == SCROLL_STATE_TOUCH_SCROLL
+                && currentRefreshState != RefreshStatusEnum.REFRESHING) {
                 if (firstVisibleItem == 0) {
                     refreshViewImage.setVisibility(View.VISIBLE);
-                    if (refreshViewLayout.getBottom() >= headerOriginalHeight + HEADER_HEIGHT_UPPER_LEVEL
+                    if (refreshViewLayout.getBottom() >= headerOriginalHeight
+                                                         + HEADER_HEIGHT_UPPER_LEVEL
                         || refreshViewLayout.getTop() >= 0) {
                         setStatusReleaseToRefresh();
-                    } else if (refreshViewLayout.getBottom() < headerOriginalHeight + HEADER_HEIGHT_UPPER_LEVEL) {
+                    } else if (refreshViewLayout.getBottom() < headerOriginalHeight
+                                                               + HEADER_HEIGHT_UPPER_LEVEL) {
                         setStatusDropDownToRefresh();
                     }
                 } else {
@@ -295,9 +344,12 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
 
         // 当为加载更多样式并且设置了自动加载更多且含有更多元素时到达屏幕底时自动加载更多
         if (isLoadMoreStyle && isAutoLoadMore && hasMore) {
-            if (firstVisibleItem > 0 && totalItemCount > 0 && (firstVisibleItem + visibleItemCount == totalItemCount)) {
-                loadMoreButton.performClick();
+            if (firstVisibleItem > 0 && totalItemCount > 0
+                && (firstVisibleItem + visibleItemCount == totalItemCount)) {
+                isNeedLoadMore = true;
             }
+        } else {
+            isNeedLoadMore = false;
         }
         if (onScrollListener != null) {
             onScrollListener.onScroll(view, firstVisibleItem, visibleItemCount, totalItemCount);
@@ -325,6 +377,36 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
     public void onRefreshBegin() {
         if (isDropDownToRefreshStyle) {
             setStatusRefreshing();
+        }
+    }
+
+    /**
+     * 准备加载更多
+     */
+    public void onLoadMoreBegin() {
+        if (isLoadMoreStyle) {
+            if (isShowLoadMoreProgress) {
+                loadMoreProgress.setVisibility(View.VISIBLE);
+            }
+            loadMoreButton.setText(R.string.drop_down_to_refresh_list_loading_more_tips);
+            loadMoreButton.setEnabled(false);
+        }
+    }
+
+    /**
+     * 加载更多结束
+     */
+    public void onLoadMoreComplete() {
+        if (isLoadMoreStyle) {
+            if (isShowLoadMoreProgress) {
+                loadMoreProgress.setVisibility(View.GONE);
+            }
+            loadMoreButton.setEnabled(true);
+            if (!hasMore) {
+                loadMoreButton.setText(R.string.drop_down_to_refresh_list_no_more_tips);
+            } else {
+                loadMoreButton.setText(R.string.drop_down_to_refresh_list_more_tips);
+            }
         }
     }
 
@@ -556,7 +638,8 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
             if (currentRefreshState == RefreshStatusEnum.RELEASE_TO_REFRESH) {
                 refreshViewLayout.setPadding(refreshViewLayout.getPaddingLeft(),
                                              (int)(((ev.getHistoricalY(i) - actionDownPointY) - headerOriginalHeight) / HEADER_PADDING_RATE),
-                                             refreshViewLayout.getPaddingRight(), refreshViewLayout.getPaddingBottom());
+                                             refreshViewLayout.getPaddingRight(),
+                                             refreshViewLayout.getPaddingBottom());
             }
         }
     }
@@ -566,7 +649,8 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
      */
     private void resetHeaderPadding() {
         refreshViewLayout.setPadding(refreshViewLayout.getPaddingLeft(), headerOriginalTopPadding,
-                                     refreshViewLayout.getPaddingRight(), refreshViewLayout.getPaddingBottom());
+                                     refreshViewLayout.getPaddingRight(),
+                                     refreshViewLayout.getPaddingBottom());
     }
 
     /**
@@ -577,7 +661,8 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
     private void measureView(View child) {
         ViewGroup.LayoutParams p = child.getLayoutParams();
         if (p == null) {
-            p = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            p = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
+                                           ViewGroup.LayoutParams.WRAP_CONTENT);
         }
 
         int childWidthSpec = ViewGroup.getChildMeasureSpec(0, 0 + 0, p.width);
@@ -598,11 +683,14 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
      * @param attrs
      */
     private void getAttrs(Context context, AttributeSet attrs) {
-        TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.drop_down_to_refresh_list_attr);
+        TypedArray ta = context.obtainStyledAttributes(attrs,
+                                                       R.styleable.drop_down_to_refresh_list_attr);
         isDropDownToRefreshStyle = ta.getBoolean(R.styleable.drop_down_to_refresh_list_attr_isDropDownToRefreshStyle,
                                                  true);
-        isLoadMoreStyle = ta.getBoolean(R.styleable.drop_down_to_refresh_list_attr_isLoadMoreStyle, true);
-        isAutoLoadMore = ta.getBoolean(R.styleable.drop_down_to_refresh_list_attr_isAutoLoadMore, false);
+        isLoadMoreStyle = ta.getBoolean(R.styleable.drop_down_to_refresh_list_attr_isLoadMoreStyle,
+                                        true);
+        isAutoLoadMore = ta.getBoolean(R.styleable.drop_down_to_refresh_list_attr_isAutoLoadMore,
+                                       false);
         ta.recycle();
     }
 }

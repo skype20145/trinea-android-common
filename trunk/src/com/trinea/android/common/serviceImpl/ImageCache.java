@@ -1,4 +1,4 @@
-package com.trinea.android.common.cache;
+package com.trinea.android.common.serviceImpl;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -21,35 +21,35 @@ import android.os.Message;
 import android.util.Log;
 import android.view.View;
 
-import com.trinea.android.common.serviceImpl.RemoveTypeDrawableLarge;
-import com.trinea.android.common.serviceImpl.RemoveTypeDrawableSmall;
-import com.trinea.android.common.util.ImageUtils;
-import com.trinea.java.common.SerializeUtils;
-import com.trinea.java.common.StringUtils;
-import com.trinea.java.common.entity.CacheObject;
-import com.trinea.java.common.service.Cache;
-import com.trinea.java.common.service.CacheFullRemoveType;
-import com.trinea.java.common.serviceImpl.AutoGetDataCache;
-import com.trinea.java.common.serviceImpl.AutoGetDataCache.OnGetDataListener;
-import com.trinea.java.common.serviceImpl.RemoveTypeUsedCountSmall;
-import com.trinea.java.common.serviceImpl.SimpleCache;
+import com.trinea.android.common.service.Cache;
+import com.trinea.android.common.service.CacheFullRemoveType;
+import com.trinea.android.common.serviceImpl.AutoGetDataCache.OnGetDataListener;
+import com.trinea.android.common.utils.ImageUtils;
+import com.trinea.android.common.utils.SerializeUtils;
+import com.trinea.android.common.utils.StringUtils;
+import com.trinea.android.common.entity.CacheObject;
 
 /**
  * <strong>图片缓存</strong>，适用于图片较小，可直接在内存中缓存情况，图片较大情况可使用{@link ImageSDCardCache}。<br/>
  * <ul>
  * 缓存使用
  * <li>使用下面缓存初始化中介绍的几种构造函数之一初始化缓存</li>
- * <li>调用{@link #loadDrawable(String, List, View)}获取当前图片并获取缓存新图片，{@link #loadDrawable(String, View)}仅仅获取当前图片</li>
+ * <li>调用{@link #loadDrawable(String, List, View)}获取当前图片并预取新图片; {@link #loadDrawable(String, View)}获取当前图片; 调用
+ * {@link #loadDrawable(String, View, OnImageCallListener)}获取当前图片并调用自己的回调接口;
+ * {@link #loadDrawable(String, List, View, OnImageCallListener)}获取当前图片后调用自己的回调接口并预取新图片</li>
  * <li>使用{@link #saveCache(String, ImageCache)}保存缓存到文件</li>
  * <li>使用{@link #put(String, CacheObject)}或{@link #put(String, Drawable)}或{@link #putAll(ImageCache)}向缓存中添加元素</li>
  * </ul>
  * <ul>
  * 缓存初始化
+ * <li>{@link #ImageCache()}</li>
+ * <li>{@link #ImageCache(int, long, CacheFullRemoveType))}</li>
  * <li>{@link #ImageCache(OnImageCallListener)}</li>
  * <li>{@link #ImageCache(OnImageCallListener, int)}</li>
  * <li>{@link #ImageCache(OnImageCallListener, int, long)}</li>
  * <li>{@link #ImageCache(OnImageCallListener, int, CacheFullRemoveType)}</li>
  * <li>{@link #ImageCache(OnImageCallListener, int, long, CacheFullRemoveType)}</li>
+ * <li>{@link #ImageCache(OnGetDataListener, OnImageCallListener, int, long, CacheFullRemoveType)}</li>
  * <li>{@link #loadCache(String)}从文件中恢复缓存</li>
  * </ul>
  * 
@@ -58,21 +58,60 @@ import com.trinea.java.common.serviceImpl.SimpleCache;
 public class ImageCache implements Serializable, Cache<String, Drawable> {
 
     private static final long                  serialVersionUID  = 1L;
+
     private static final String                TAG               = "ImageCache";
 
+    /** 是否打印获取图片失败异常 **/
+    public static boolean                      printException    = true;
     /** 默认缓存大小 **/
     public static final int                    DEFAULT_MAX_SIZE  = 32;
 
     /** image获取成功的message what **/
     private static final int                   IMAGE_LOADED_WHAT = 1;
     /** 线程池 **/
-    private transient ExecutorService          threadPool        = Executors.newCachedThreadPool();
+    private ExecutorService                    threadPool        = Executors.newFixedThreadPool(Runtime.getRuntime()
+                                                                                                       .availableProcessors() * 2 + 1);
 
     /** 图片缓存 **/
     private AutoGetDataCache<String, Drawable> imageCache;
 
-    /** 图片获取的回调接口 **/
+    /** 图片获取结束后的回调接口 **/
     private OnImageCallListener                listener;
+
+    /** 发送并处理消息 **/
+    private Handler                            handler;
+
+    /** http read time out **/
+    public static int                          httpReadTimeOut   = -1;
+
+    /**
+     * 初始化缓存
+     * <ul>
+     * <li>listener为空，只能通过{@link #loadDrawable(String, View, OnImageCallListener)}和
+     * {@link #loadDrawable(String, List, View, OnImageCallListener)}load图片</li>
+     * <li>缓存最大容量为{@link #DEFAULT_MAX_SIZE}</li>
+     * <li>元素不会失效</li>
+     * <li>cache满时删除元素类型为{@link RemoveTypeUsedCountSmall}</li>
+     * </ul>
+     */
+    public ImageCache(){
+        this(null, DEFAULT_MAX_SIZE, -1, new RemoveTypeUsedCountSmall<Drawable>());
+    }
+
+    /**
+     * 初始化缓存
+     * <ul>
+     * <li>listener为空，只能通过{@link #loadDrawable(String, View, OnImageCallListener)}和
+     * {@link #loadDrawable(String, List, View, OnImageCallListener)}load图片</li>
+     * </ul>
+     * 
+     * @param maxSize 缓存最大容量
+     * @param validTime 缓存中元素有效时间，小于等于0表示元素不会失效，失效规则见{@link SimpleCache#isExpired(CacheObject)}
+     * @param cacheFullRemoveType cache满时删除元素类型，见{@link CacheFullRemoveType}
+     */
+    public ImageCache(int maxSize, long validTime, CacheFullRemoveType<Drawable> cacheFullRemoveType){
+        this(null, maxSize, validTime, cacheFullRemoveType);
+    }
 
     /**
      * 初始化缓存
@@ -82,7 +121,7 @@ public class ImageCache implements Serializable, Cache<String, Drawable> {
      * <li>cache满时删除元素类型为{@link RemoveTypeUsedCountSmall}</li>
      * </ul>
      * 
-     * @param listener 图片获取的回调接口
+     * @param listener 图片获取结束后的回调接口
      */
     public ImageCache(OnImageCallListener listener){
         this(listener, DEFAULT_MAX_SIZE, -1, new RemoveTypeUsedCountSmall<Drawable>());
@@ -95,7 +134,7 @@ public class ImageCache implements Serializable, Cache<String, Drawable> {
      * <li>cache满时删除元素类型为{@link RemoveTypeUsedCountSmall}</li>
      * </ul>
      * 
-     * @param listener 图片获取的回调接口
+     * @param listener 图片获取结束后的回调接口
      * @param maxSize 缓存最大容量
      */
     public ImageCache(OnImageCallListener listener, int maxSize){
@@ -108,7 +147,7 @@ public class ImageCache implements Serializable, Cache<String, Drawable> {
      * <li>cache满时删除元素类型为{@link RemoveTypeUsedCountSmall}</li>
      * </ul>
      * 
-     * @param listener 图片获取的回调接口
+     * @param listener 图片获取结束后的回调接口
      * @param maxSize 缓存最大容量
      * @param validTime 缓存中元素有效时间，小于等于0表示元素不会失效，失效规则见{@link SimpleCache#isExpired(CacheObject)}
      */
@@ -122,39 +161,55 @@ public class ImageCache implements Serializable, Cache<String, Drawable> {
      * <li>元素不会失效</li>
      * </ul>
      * 
-     * @param listener 图片获取的回调接口
+     * @param listener 图片获取结束后的回调接口
      * @param maxSize 缓存最大容量
      * @param cacheFullRemoveType cache满时删除元素类型，见{@link CacheFullRemoveType}
      */
-    public ImageCache(OnImageCallListener listener, int maxSize, CacheFullRemoveType<Drawable> cacheFullRemoveType){
+    public ImageCache(OnImageCallListener listener, int maxSize,
+                      CacheFullRemoveType<Drawable> cacheFullRemoveType){
         this(listener, maxSize, -1, cacheFullRemoveType);
     }
 
     /**
      * 初始化缓存
      * 
-     * @param listener 图片获取的回调接口
+     * @param listener 图片获取结束后的回调接口
      * @param maxSize 缓存最大容量
      * @param validTime 缓存中元素有效时间，小于等于0表示元素不会失效，失效规则见{@link SimpleCache#isExpired(CacheObject)}
      * @param cacheFullRemoveType cache满时删除元素类型，见{@link CacheFullRemoveType}
      */
     public ImageCache(OnImageCallListener listener, int maxSize, long validTime,
                       CacheFullRemoveType<Drawable> cacheFullRemoveType){
-        if (listener == null) {
-            throw new IllegalArgumentException("The onImageCallListener of cache can not be null.");
-        }
-
-        this.imageCache = new AutoGetDataCache<String, Drawable>(getOnGetDataListener(), maxSize, validTime,
-                                                                 cacheFullRemoveType);
-        this.listener = listener;
+        this(DEFAULT_GET_IMAGE_LISTENER, listener, maxSize, validTime, cacheFullRemoveType);
     }
 
     /**
-     * load图片，规则如下
-     * <ul>
-     * <li>若imageUrl和listener皆不为空，获取图片（不在缓存中则立即网络下载），执行
-     * {@link OnImageCallListener#onImageLoaded(String, Drawable, View)})</li>
-     * </ul>
+     * 初始化缓存
+     * 
+     * @param getDataListener 获取图片的接口
+     * @param imageCallBackListener 图片获取结束后的回调接口
+     * @param maxSize 缓存最大容量
+     * @param validTime 缓存中元素有效时间，小于等于0表示元素不会失效，失效规则见{@link SimpleCache#isExpired(CacheObject)}
+     * @param cacheFullRemoveType cache满时删除元素类型，见{@link CacheFullRemoveType}
+     */
+    public ImageCache(OnGetDataListener<String, Drawable> getDataListener,
+                      OnImageCallListener imageCallBackListener, int maxSize, long validTime,
+                      CacheFullRemoveType<Drawable> cacheFullRemoveType){
+        if (getDataListener == null) {
+            throw new IllegalArgumentException("The getDataListener of cache can not be null.");
+        }
+
+        this.imageCache = new AutoGetDataCache<String, Drawable>(getDataListener, maxSize,
+                                                                 validTime, cacheFullRemoveType);
+        this.listener = imageCallBackListener;
+        this.handler = new MyHandler();
+        if (Looper.myLooper() == null) {
+            Looper.prepare();
+        }
+    }
+
+    /**
+     * load图片
      * 
      * @param imageUrl 图片url
      * @param view 操作图片的view
@@ -165,50 +220,89 @@ public class ImageCache implements Serializable, Cache<String, Drawable> {
     }
 
     /**
-     * load图片，规则如下
-     * <ul>
-     * <li>若imageUrl和listener皆不为空，获取图片（不在缓存中则立即网络下载），执行
-     * {@link OnImageCallListener#onImageLoaded(String, Drawable, View)})</li>
-     * <li>按照该urlList中的url顺序获取新数据进行缓存</li>
-     * </ul>
+     * load图片并提前预取
      * 
      * @param imageUrl 图片url
-     * @param urlList 图片url list，按照该list中的url顺序获取新图片进行缓存，为空表示不进行缓存
+     * @param urlList 图片url list，获取新图片进行预取，为空表示不进行预取
      * @param view 操作图片的view
      * @return 图片是否在缓存中，true表示是
      */
     public boolean loadDrawable(final String imageUrl, final List<String> urlList, final View view) {
-        if (StringUtils.isEmpty(imageUrl) || listener == null) {
+        if (StringUtils.isEmpty(imageUrl)) {
             return false;
         }
 
-        synchronized (this) {
-            if (Looper.myLooper() == null) {
-                Looper.prepare();
+        /**
+         * 若图片在缓存中直接调用listener，否则新建线程等待获取完成
+         */
+        CacheObject<Drawable> object = imageCache.getAsync(imageUrl);
+        if (object != null) {
+            Drawable drawable = object.getData();
+            if (drawable != null) {
+                listener.onImageLoaded(imageUrl, drawable, view, true);
+                return true;
+            } else {
+                remove(imageUrl);
             }
         }
-        final Handler handler = new Handler() {
+        if (imageCache.isExistGettingDataThread(imageUrl)) {
+            return false;
+        }
 
-            public void handleMessage(Message message) {
-                switch (message.what) {
-                    case IMAGE_LOADED_WHAT:
-                        listener.onImageLoaded(imageUrl, (Drawable)message.obj, view);
-                        break;
-                }
-            }
-        };
-
-        // 获取图片并发送图片获取成功的message what
         threadPool.execute(new Runnable() {
 
             @Override
             public void run() {
                 CacheObject<Drawable> object = imageCache.get(imageUrl, urlList);
                 Drawable drawable = (object == null ? null : object.getData());
-                handler.sendMessage(handler.obtainMessage(IMAGE_LOADED_WHAT, drawable));
+                if (drawable == null) {
+                    remove(imageUrl);
+                } else {
+                    handler.sendMessage(handler.obtainMessage(IMAGE_LOADED_WHAT,
+                                                              new UpdateMessage(imageUrl, drawable,
+                                                                                view)));
+                }
             }
         });
-        return imageCache.containsKey(imageUrl);
+        return false;
+    }
+
+    /**
+     * 事件处理
+     * 
+     * @author Trinea 2012-11-20
+     */
+    private class MyHandler extends Handler {
+
+        public void handleMessage(Message message) {
+            switch (message.what) {
+                case IMAGE_LOADED_WHAT:
+                    UpdateMessage updateMessage = (UpdateMessage)message.obj;
+                    if (updateMessage != null) {
+                        listener.onImageLoaded(updateMessage.imageUrl, updateMessage.drawable,
+                                               updateMessage.view, false);
+                    }
+                    break;
+            }
+        }
+    };
+
+    /**
+     * 用来更新的消息
+     * 
+     * @author gxwu@lewatek.com 2013-1-14
+     */
+    private class UpdateMessage {
+
+        String   imageUrl;
+        Drawable drawable;
+        View     view;
+
+        public UpdateMessage(String imageUrl, Drawable drawable, View view){
+            this.imageUrl = imageUrl;
+            this.drawable = drawable;
+            this.view = view;
+        }
     }
 
     /**
@@ -246,7 +340,7 @@ public class ImageCache implements Serializable, Cache<String, Drawable> {
     }
 
     /**
-     * 图片获取的回调接口
+     * 图片获取结束后的回调接口
      * <ul>
      * <li>实现{@link OnImageCallListener#onImageLoaded(String, Drawable, View)}表示获取到图片后的操作</li>
      * </ul>
@@ -261,8 +355,10 @@ public class ImageCache implements Serializable, Cache<String, Drawable> {
          * @param imageUrl 图片url
          * @param imageDrawable 图片
          * @param view 操作图片的view
+         * @param isInCache 是否在缓存中
          */
-        public void onImageLoaded(String imageUrl, Drawable imageDrawable, View view);
+        public void onImageLoaded(String imageUrl, Drawable imageDrawable, View view,
+                                  boolean isInCache);
     }
 
     /**
@@ -275,12 +371,13 @@ public class ImageCache implements Serializable, Cache<String, Drawable> {
      * 
      * @param out
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private void writeObject(ObjectOutputStream out) {
         try {
             Class removeClass = imageCache.getCacheFullRemoveType().getClass();
             CacheFullRemoveType removeType = (CacheFullRemoveType)(removeClass.newInstance());
-            if (removeType instanceof RemoveTypeDrawableSmall || removeType instanceof RemoveTypeDrawableLarge) {
+            if (removeType instanceof RemoveTypeDrawableSmall
+                || removeType instanceof RemoveTypeDrawableLarge) {
                 removeType = new RemoveTypeNull<Byte[]>();
             }
             AutoGetDataCache<String, byte[]> byteCache = new AutoGetDataCache<String, byte[]>(
@@ -323,7 +420,7 @@ public class ImageCache implements Serializable, Cache<String, Drawable> {
      * 
      * @param in
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private void readObject(ObjectInputStream in) {
         try {
             GetField readFields = in.readFields();
@@ -336,8 +433,10 @@ public class ImageCache implements Serializable, Cache<String, Drawable> {
                 if (removeType instanceof RemoveTypeNull) {
                     removeType = new RemoveTypeDrawableSmall();
                 }
-                imageCache = new AutoGetDataCache<String, Drawable>(getOnGetDataListener(), byteCache.getMaxSize(),
-                                                                    byteCache.getValidTime(), removeType);
+                imageCache = new AutoGetDataCache<String, Drawable>(DEFAULT_GET_IMAGE_LISTENER,
+                                                                    byteCache.getMaxSize(),
+                                                                    byteCache.getValidTime(),
+                                                                    removeType);
                 Set<Map.Entry<String, CacheObject<byte[]>>> entrySet = byteCache.entrySet();
                 for (Entry<String, CacheObject<byte[]>> entry : entrySet) {
                     if (entry != null) {
@@ -390,29 +489,6 @@ public class ImageCache implements Serializable, Cache<String, Drawable> {
      */
     public static void saveCache(String filePath, ImageCache cache) {
         SerializeUtils.serialization(filePath, cache);
-    }
-
-    /**
-     * 得到获取新数据的类
-     * 
-     * @return
-     */
-    private OnGetDataListener<String, Drawable> getOnGetDataListener() {
-        return new OnGetDataListener<String, Drawable>() {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public CacheObject<Drawable> onGetData(String key) {
-                Drawable d = null;
-                try {
-                    d = ImageUtils.getDrawableFromUrl(key);
-                } catch (Exception e) {
-                    Log.e(TAG, "根据imageUrl获得Drawable异常，imageUrl为：" + key, e);
-                }
-                return (d == null ? null : new CacheObject<Drawable>(d));
-            }
-        };
     }
 
     /**
@@ -480,4 +556,40 @@ public class ImageCache implements Serializable, Cache<String, Drawable> {
     public Collection<CacheObject<Drawable>> values() {
         return imageCache.values();
     }
+
+    public void shutdown() {
+        imageCache.shutdown();
+        threadPool.shutdown();
+    }
+
+    public List<Runnable> shutdownNow() {
+        imageCache.shutdownNow();
+        return threadPool.shutdownNow();
+    }
+
+    /** 默认获取图片的方式 **/
+    static final OnGetDataListener<String, Drawable> DEFAULT_GET_IMAGE_LISTENER = new OnGetDataListener<String, Drawable>() {
+
+                                                                                    private static final long serialVersionUID = 1L;
+
+                                                                                    @Override
+                                                                                    public CacheObject<Drawable> onGetData(String key) {
+                                                                                        Drawable d = null;
+                                                                                        try {
+                                                                                            d = ImageUtils.getDrawableFromUrl(key,
+                                                                                                                              httpReadTimeOut);
+                                                                                        } catch (Exception e) {
+                                                                                            if (printException) {
+                                                                                                Log.e(TAG,
+                                                                                                      "根据imageUrl获得Drawable异常，imageUrl为："
+                                                                                                              + key,
+                                                                                                      e);
+                                                                                            }
+                                                                                        }
+                                                                                        return (d == null
+                                                                                            ? null
+                                                                                            : new CacheObject<Drawable>(
+                                                                                                                        d));
+                                                                                    }
+                                                                                };
 }

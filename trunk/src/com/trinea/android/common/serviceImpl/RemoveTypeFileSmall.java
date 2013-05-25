@@ -1,8 +1,8 @@
 package com.trinea.android.common.serviceImpl;
 
-import com.trinea.java.common.FileUtils;
-import com.trinea.java.common.entity.CacheObject;
-import com.trinea.java.common.service.CacheFullRemoveType;
+import com.trinea.android.common.utils.FileUtils;
+import com.trinea.android.common.entity.CacheObject;
+import com.trinea.android.common.service.CacheFullRemoveType;
 
 /**
  * 缓存满时删除数据的类型--文件小先删除；若文件大小相同，对象使用次数(即被get的次数)少先删除；若对象使用次数相同，对象进入缓存时间早先删除

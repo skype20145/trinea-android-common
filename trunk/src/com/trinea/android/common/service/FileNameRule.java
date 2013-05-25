@@ -2,7 +2,7 @@ package com.trinea.android.common.service;
 
 import java.io.Serializable;
 
-import com.trinea.android.common.cache.ImageSDCardCache;
+import com.trinea.android.common.serviceImpl.ImageSDCardCache;
 
 /**
  * 文件名规则，用于{@link ImageSDCardCache}保存图片时使用
@@ -14,8 +14,8 @@ public interface FileNameRule extends Serializable {
     /**
      * 得到文件名，包含后缀。可包含文件夹目录结构。
      * 
-     * @param feature
+     * @param imageUrl 图片对应的url
      * @return
      */
-    public String getFileName(Object feature);
+    public String getFileName(String imageUrl);
 }

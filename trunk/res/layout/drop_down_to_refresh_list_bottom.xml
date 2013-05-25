@@ -2,11 +2,21 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent" >
-    <Button 
+
+    <Button
         android:id="@+id/drop_down_to_refresh_list_more"
-        android:gravity="center"
-        android:textColor="@color/drop_down_to_refresh_list_more_layout_font_color"
-        android:text="@string/drop_down_to_refresh_list_more_tips"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent" />
+        android:layout_height="fill_parent"
+        android:gravity="center"
+        android:text="@string/drop_down_to_refresh_list_more_tips"
+        android:textColor="@color/drop_down_to_refresh_list_more_layout_font_color" />
+
+    <ProgressBar
+        android:id="@+id/drop_down_to_refresh_list_more_progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:indeterminate="true"
+        android:visibility="gone" />
+
 </RelativeLayout>

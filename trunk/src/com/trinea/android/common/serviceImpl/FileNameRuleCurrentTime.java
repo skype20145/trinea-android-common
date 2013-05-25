@@ -3,16 +3,22 @@ package com.trinea.android.common.serviceImpl;
 import java.util.Calendar;
 
 import com.trinea.android.common.service.FileNameRule;
-import com.trinea.java.common.FileUtils;
+import com.trinea.android.common.utils.FileUtils;
+import com.trinea.android.common.utils.StringUtils;
 
 /**
- * 文件名规则--以当前时间为文件名，以文件网络url后缀为后缀
+ * 文件名规则
+ * <ul>
+ * <li>以当前时间为文件名</li>
+ * <li>以文件url后缀为后缀</li>
+ * </ul>
  * 
  * @author Trinea 2012-7-6 上午11:15:53
  */
 public class FileNameRuleCurrentTime implements FileNameRule {
 
     private static final long  serialVersionUID    = 1L;
+
     /** 默认文件后缀 **/
     public static final String DEFAULT_FILE_SUFFIX = ".jpg";
 
@@ -28,7 +34,7 @@ public class FileNameRuleCurrentTime implements FileNameRule {
     }
 
     @Override
-    public String getFileName(Object feature) {
+    public String getFileName(String imageUrl) {
         long time;
         Calendar now = Calendar.getInstance();
         switch (timeRule) {
@@ -65,8 +71,8 @@ public class FileNameRuleCurrentTime implements FileNameRule {
                 time = now.getTimeInMillis();
                 break;
         }
-        return Long.toString(time) + "."
-               + ((feature instanceof String) ? FileUtils.getFileExtension((String)feature) : DEFAULT_FILE_SUFFIX);
+        String ext = FileUtils.getFileExtension(imageUrl);
+        return StringUtils.isEmpty(ext) ? Long.toString(time) : (Long.toString(time) + "." + ext);
     }
 
     /**
