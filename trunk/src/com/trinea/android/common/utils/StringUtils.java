@@ -6,67 +6,90 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * 字符串工具类，用于实现一些字符串的常用操作
- * <ul>
- * <li>继承自{@link org.apache.commons.lang3.StringUtils}</li>
- * </ul>
+ * String Utils
  * 
- * @author Trinea 2011-7-22 上午12:36:29
+ * @author Trinea 2011-7-22
  */
 public class StringUtils {
 
+    /**
+     * is null or its length is 0 or it is made by space
+     * 
+     * <pre>
+     * isBlank(null) = true;
+     * isBlank(&quot;&quot;) = true;
+     * isBlank(&quot;  &quot;) = true;
+     * isBlank(&quot;a&quot;) = false;
+     * isBlank(&quot;a &quot;) = false;
+     * isBlank(&quot; a&quot;) = false;
+     * isBlank(&quot;a b&quot;) = false;
+     * </pre>
+     * 
+     * @param str
+     * @return if string is null or its size is 0 or it is made by space, return true, else return false.
+     */
     public static boolean isBlank(String str) {
         return (str == null || str.trim().length() == 0);
     }
 
+    /**
+     * is null or its length is 0
+     * 
+     * <pre>
+     * isEmpty(null) = true;
+     * isEmpty(&quot;&quot;) = true;
+     * isEmpty(&quot;  &quot;) = false;
+     * </pre>
+     * 
+     * @param str
+     * @return if string is null or its size is 0, return true, else return false.
+     */
     public static boolean isEmpty(String str) {
         return (str == null || str.length() == 0);
     }
 
     /**
-     * 比较两个String
+     * compare two string
      * 
      * @param actual
      * @param expected
-     * @return <ul>
-     * <li>若两个字符串都为null，则返回true</li>
-     * <li>若两个字符串都不为null，且相等，则返回true</li>
-     * <li>否则返回false</li>
-     * </ul>
+     * @return
+     * @see ObjectUtils#isEquals(Object, Object)
      */
     public static boolean isEquals(String actual, String expected) {
         return ObjectUtils.isEquals(actual, expected);
     }
 
     /**
-     * null字符串转换为长度为0的字符串
+     * null string to empty string
      * 
-     * @param str 待转换字符串
-     * @return
-     * @see <pre>
+     * <pre>
      * nullStrToEmpty(null) = &quot;&quot;;
      * nullStrToEmpty(&quot;&quot;) = &quot;&quot;;
      * nullStrToEmpty(&quot;aa&quot;) = &quot;aa&quot;;
      * </pre>
+     * 
+     * @param str
+     * @return
      */
     public static String nullStrToEmpty(String str) {
         return (str == null ? "" : str);
     }
 
     /**
-     * 将字符串首字母大写后返回
-     * 
-     * @param str 原字符串
-     * @return 首字母大写后的字符串
+     * capitalize first letter
      * 
      * <pre>
-     *      capitalizeFirstLetter(null)     =   null;
-     *      capitalizeFirstLetter("")       =   "";
-     *      capitalizeFirstLetter("2ab")    =   "2ab"
-     *      capitalizeFirstLetter("a")      =   "A"
-     *      capitalizeFirstLetter("ab")     =   "Ab"
-     *      capitalizeFirstLetter("Abc")    =   "Abc"
+     * capitalizeFirstLetter(null)     =   null;
+     * capitalizeFirstLetter("")       =   "";
+     * capitalizeFirstLetter("2ab")    =   "2ab"
+     * capitalizeFirstLetter("a")      =   "A"
+     * capitalizeFirstLetter("ab")     =   "Ab"
+     * capitalizeFirstLetter("Abc")    =   "Abc"
      * </pre>
+     * 
+     * @param str
+     * @return
      */
     public static String capitalizeFirstLetter(String str) {
         if (isEmpty(str)) {
@@ -78,7 +101,7 @@ public class StringUtils {
     }
 
     /**
-     * 如果不是普通字符，则按照utf8进行编码
+     * encoded in utf-8
      * 
      * <pre>
      * utf8Encode(null)        =   null
@@ -87,8 +110,9 @@ public class StringUtils {
      * utf8Encode("啊啊啊啊")   = "%E5%95%8A%E5%95%8A%E5%95%8A%E5%95%8A";
      * </pre>
      * 
-     * @param str 原字符
-     * @return 编码后字符，若编码异常抛出异常
+     * @param str
+     * @return
+     * @throws UnsupportedEncodingException if an error occurs
      */
     public static String utf8Encode(String str) {
         if (!isEmpty(str) && str.getBytes().length != str.length()) {
@@ -102,10 +126,10 @@ public class StringUtils {
     }
 
     /**
-     * 如果不是普通字符，则按照utf8进行编码，编码异常则返回defultReturn
+     * encoded in utf-8, if exception, return defultReturn
      * 
-     * @param str 源字符串
-     * @param defultReturn 出现异常默认返回
+     * @param str
+     * @param defultReturn
      * @return
      */
     public static String utf8Encode(String str, String defultReturn) {
@@ -120,29 +144,29 @@ public class StringUtils {
     }
 
     /**
-     * 得到href链接的innerHtml
+     * get innerHtml from href
      * 
-     * @param href href内容
-     * @return href的innerHtml
-     * <ul>
-     * <li>空字符串返回""</li>
-     * <li>若字符串不为空，且不符合链接正则的返回原内容</li>
-     * <li>若字符串不为空，且符合链接正则的返回最后一个innerHtml</li>
-     * </ul>
-     * @see <pre>
-     *      getHrefInnerHtml(null)                                  = ""
-     *      getHrefInnerHtml("")                                    = ""
-     *      getHrefInnerHtml("mp3")                                 = "mp3";
-     *      getHrefInnerHtml("&lt;a innerHtml&lt;/a&gt;")                    = "&lt;a innerHtml&lt;/a&gt;";
-     *      getHrefInnerHtml("&lt;a&gt;innerHtml&lt;/a&gt;")                    = "innerHtml";
-     *      getHrefInnerHtml("&lt;a&lt;a&gt;innerHtml&lt;/a&gt;")                    = "innerHtml";
-     *      getHrefInnerHtml("&lt;a href="baidu.com"&gt;innerHtml&lt;/a&gt;")               = "innerHtml";
-     *      getHrefInnerHtml("&lt;a href="baidu.com" title="baidu"&gt;innerHtml&lt;/a&gt;") = "innerHtml";
-     *      getHrefInnerHtml("   &lt;a&gt;innerHtml&lt;/a&gt;  ")                           = "innerHtml";
-     *      getHrefInnerHtml("&lt;a&gt;innerHtml&lt;/a&gt;&lt;/a&gt;")                      = "innerHtml";
-     *      getHrefInnerHtml("jack&lt;a&gt;innerHtml&lt;/a&gt;&lt;/a&gt;")                  = "innerHtml";
-     *      getHrefInnerHtml("&lt;a&gt;innerHtml1&lt;/a&gt;&lt;a&gt;innerHtml2&lt;/a&gt;")        = "innerHtml2";
+     * <pre>
+     * getHrefInnerHtml(null)                                  = ""
+     * getHrefInnerHtml("")                                    = ""
+     * getHrefInnerHtml("mp3")                                 = "mp3";
+     * getHrefInnerHtml("&lt;a innerHtml&lt;/a&gt;")                    = "&lt;a innerHtml&lt;/a&gt;";
+     * getHrefInnerHtml("&lt;a&gt;innerHtml&lt;/a&gt;")                    = "innerHtml";
+     * getHrefInnerHtml("&lt;a&lt;a&gt;innerHtml&lt;/a&gt;")                    = "innerHtml";
+     * getHrefInnerHtml("&lt;a href="baidu.com"&gt;innerHtml&lt;/a&gt;")               = "innerHtml";
+     * getHrefInnerHtml("&lt;a href="baidu.com" title="baidu"&gt;innerHtml&lt;/a&gt;") = "innerHtml";
+     * getHrefInnerHtml("   &lt;a&gt;innerHtml&lt;/a&gt;  ")                           = "innerHtml";
+     * getHrefInnerHtml("&lt;a&gt;innerHtml&lt;/a&gt;&lt;/a&gt;")                      = "innerHtml";
+     * getHrefInnerHtml("jack&lt;a&gt;innerHtml&lt;/a&gt;&lt;/a&gt;")                  = "innerHtml";
+     * getHrefInnerHtml("&lt;a&gt;innerHtml1&lt;/a&gt;&lt;a&gt;innerHtml2&lt;/a&gt;")        = "innerHtml2";
      * </pre>
+     * 
+     * @param href
+     * @return <ul>
+     * <li>if href is null, return ""</li>
+     * <li>if not match regx, return source</li>
+     * <li>return the last string that match regx</li>
+     * </ul>
      */
     public static String getHrefInnerHtml(String href) {
         if (isEmpty(href)) {
@@ -158,7 +182,7 @@ public class StringUtils {
     }
 
 /**
-     * html的转义字符转换成正常的字符串
+     * process special char in html
      * 
      * <pre>
      * htmlEscapeCharsToString(null) = null;
@@ -184,7 +208,7 @@ public class StringUtils {
     }
 
     /**
-     * 半角字符转换为全角字符
+     * transform half width char to full width char
      * 
      * <pre>
      * fullWidthToHalfWidth(null) = null;
@@ -217,7 +241,7 @@ public class StringUtils {
     }
 
     /**
-     * 全角字符转换为半角字符
+     * transform full width char to half width char
      * 
      * <pre>
      * halfWidthToFullWidth(null) = null;

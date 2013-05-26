@@ -7,25 +7,22 @@ import com.trinea.android.common.utils.FileUtils;
 import com.trinea.android.common.utils.StringUtils;
 
 /**
- * 文件名规则
+ * File name rule, used when save image to sdcard in {@link ImageSDCardCache}
  * <ul>
- * <li>以当前时间为文件名</li>
- * <li>以文件url后缀为后缀</li>
+ * <li>use {@link TimeRule} as file name</li>
+ * <li>use file suffix in url as target file suffix</li>
  * </ul>
  * 
- * @author Trinea 2012-7-6 上午11:15:53
+ * @author Trinea 2012-7-6
  */
 public class FileNameRuleCurrentTime implements FileNameRule {
 
-    private static final long  serialVersionUID    = 1L;
+    private static final long serialVersionUID = 1L;
 
-    /** 默认文件后缀 **/
-    public static final String DEFAULT_FILE_SUFFIX = ".jpg";
-
-    private TimeRule           timeRule;
+    private TimeRule          timeRule;
 
     /**
-     * @param timeRule 时间规则，见{@link TimeRule}
+     * @param timeRule, see {@link TimeRule}
      * @return
      */
     public FileNameRuleCurrentTime(TimeRule timeRule){
@@ -76,20 +73,25 @@ public class FileNameRuleCurrentTime implements FileNameRule {
     }
 
     /**
-     * 时间规则
+     * Time Rule
      * <ul>
-     * <li>{@link #YEAR} 当前年份，E.g., at 2012-7-6 14:37:58.365 PM result is 2012</li>
-     * <li>{@link #DAY_OF_MONTH} 当前月份中的第几天，E.g., at 2012-7-6 14:37:58.365 PM result is 6</li>
-     * <li>{@link #MILLISECOND} 当前毫秒，E.g., at 2012-7-6 14:37:58.365 PM result is 365</li>
-     * <li>{@link #HOUR_OF_DAY_TO_MILLIS} 当前时间中小时（24小时制）到毫秒部分转换为毫秒，E.g., at 2012-7-6 14:37:58.365 PM result is 52678365</li>
-     * <li>{@link #HOUR_OF_DAY_TO_MINUTE} 当前时间中小时（24小时制）到分钟部分转换为分钟，E.g., at 2012-7-6 14:37:58.365 PM result is 877</li>
-     * <li>{@link #HOUR_TO_MILLIS} 当前时间中小时（12小时制）到毫秒部分转换为毫秒，E.g., at 2012-7-6 14:37:58.365 PM result is 9478365</li>
-     * <li>{@link #MINUTE_TO_SECOND} 当前时间中分钟到秒部分转换为秒，E.g., at 2012-7-6 14:37:58.365 PM result is 2278</li>
-     * <li>{@link #TO_MILLIS} 当前时间转换为毫秒，E.g., at 2012-7-6 14:37:58.365 PM result is 1341556678365</li>
-     * <li>{@link #TO_SECOND} 当前时间转换为秒，E.g., at 2012-7-6 14:37:58.365 PM result is 1341556678</li>
+     * <li>{@link #YEAR} year of current time, E.g., at 2012-7-6 14:37:58.365 PM result is 2012</li>
+     * <li>{@link #DAY_OF_MONTH} indicating the day of the month. The first day of the month has value 1. E.g., at
+     * 2012-7-6 14:37:58.365 PM result is 6</li>
+     * <li>{@link #MILLISECOND} milliseconds of current time, E.g., at 2012-7-6 14:37:58.365 PM result is 365</li>
+     * <li>{@link #HOUR_OF_DAY_TO_MILLIS} milliseconds of current time from hour(24 hours), E.g., at 2012-7-6
+     * 14:37:58.365 PM result is 52678365</li>
+     * <li>{@link #HOUR_OF_DAY_TO_MINUTE} seconds of current time from hour(24 hours), E.g., at 2012-7-6 14:37:58.365 PM
+     * result is 877</li>
+     * <li>{@link #HOUR_TO_MILLIS} milliseconds of current time from hour(12 hours), E.g., at 2012-7-6 14:37:58.365 PM
+     * result is 9478365</li>
+     * <li>{@link #MINUTE_TO_SECOND} seconds of current time from hour(12 hours), E.g., at 2012-7-6 14:37:58.365 PM
+     * result is 2278</li>
+     * <li>{@link #TO_MILLIS} current time in milliseconds, E.g., at 2012-7-6 14:37:58.365 PM result is 1341556678365</li>
+     * <li>{@link #TO_SECOND} current time in seconds, E.g., at 2012-7-6 14:37:58.365 PM result is 1341556678</li>
      * </ul>
      * 
-     * @author Trinea 2012-7-6 下午02:09:46
+     * @author Trinea 2012-7-6
      */
     public enum TimeRule {
         YEAR, DAY_OF_MONTH, MILLISECOND, HOUR_OF_DAY_TO_MILLIS, HOUR_OF_DAY_TO_MINUTE, HOUR_TO_MILLIS,

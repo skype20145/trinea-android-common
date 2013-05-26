@@ -1,36 +1,51 @@
 package com.trinea.android.common.utils;
 
-
 /**
- * 数组工具类
+ * Array Utils
  * <ul>
- * <li>继承自{@link org.apache.commons.lang3.ArrayUtils}</li>
- * <li>{@link ArrayUtils#getLast(Object[], Object, Object, boolean)}得到array中某个元素（从前到后第一次匹配）的前一个元素</li>
- * <li>{@link ArrayUtils#getNext(Object[], Object, Object, boolean)}得到array中某个元素（从前到后第一次匹配）的后一个元素</li>
+ * <li>{@link #isEmpty(Object[])} is null or its length is 0</li>
+ * <li>{@link #getLast(Object[], Object, Object, boolean)} get last element of the target element, before the first one
+ * that match the target element front to back</li>
+ * <li>{@link #getNext(Object[], Object, Object, boolean)} get next element of the target element, after the first one
+ * that match the target element front to back</li>
+ * <li>{@link #getLast(Object[], Object, boolean)}</li>
+ * <li>{@link #getLast(int[], int, int, boolean)}</li>
+ * <li>{@link #getLast(long[], long, long, boolean)}</li>
+ * <li>{@link #getNext(Object[], Object, boolean)}</li>
+ * <li>{@link #getNext(int[], int, int, boolean)}</li>
+ * <li>{@link #getNext(long[], long, long, boolean)}</li>
  * </ul>
  * 
- * @author Trinea 2011-10-24 下午08:21:11
+ * @author Trinea 2011-10-24
  */
 public class ArrayUtils {
 
+    /**
+     * is null or its length is 0
+     * 
+     * @param <V>
+     * @param sourceArray
+     * @return
+     */
     public static <V> boolean isEmpty(V[] sourceArray) {
         return (sourceArray == null || sourceArray.length == 0);
     }
 
     /**
-     * 得到array中某个元素（从前到后第一次匹配）的前一个元素
+     * get last element of the target element, before the first one that match the target element front to back
      * <ul>
-     * <li>若数组为空，返回defaultValue</li>
-     * <li>若数组中未找到value，返回defaultValue</li>
-     * <li>若找到了value并且不为第一个元素，返回该元素的前一个元素</li>
-     * <li>若找到了value并且为第一个元素，isCircle为true时，返回数组最后一个元素；isCircle为false时，返回defaultValue</li>
+     * <li>if array is empty, return defaultValue</li>
+     * <li>if target element is not exist in array, return defaultValue</li>
+     * <li>if target element exist in array and its index is not 0, return the last element</li>
+     * <li>if target element exist in array and its index is 0, return the last one in array if isCircle is true, else
+     * return defaultValue</li>
      * </ul>
      * 
      * @param <V>
-     * @param sourceArray 源array
-     * @param value 待查找值，若value为null同样适用，会查找第一个为null的值
-     * @param defaultValue 默认返回值
-     * @param isCircle 是否是圆
+     * @param sourceArray
+     * @param value value of target element
+     * @param defaultValue default return value
+     * @param isCircle whether is circle
      * @return
      */
     public static <V> V getLast(V[] sourceArray, V value, V defaultValue, boolean isCircle) {
@@ -56,19 +71,20 @@ public class ArrayUtils {
     }
 
     /**
-     * 得到array中某个元素（从前到后第一次匹配）的后一个元素
+     * get next element of the target element, after the first one that match the target element front to back
      * <ul>
-     * <li>若数组为空，返回defaultValue</li>
-     * <li>若数组中未找到value，返回defaultValue</li>
-     * <li>若找到了value并且不为最后一个元素，返回该元素的下一个元素</li>
-     * <li>若找到了value并且为最后一个元素，isCircle为true时，返回数组第一个元素；isCircle为false时，返回defaultValue</li>
+     * <li>if array is empty, return defaultValue</li>
+     * <li>if target element is not exist in array, return defaultValue</li>
+     * <li>if target element exist in array and not the last one in array, return the next element</li>
+     * <li>if target element exist in array and the last one in array, return the first one in array if isCircle is
+     * true, else return defaultValue</li>
      * </ul>
      * 
      * @param <V>
-     * @param sourceArray 源array
-     * @param value 待查找值，若value为null同样适用，会查找第一个为null的值
-     * @param defaultValue 默认返回值
-     * @param isCircle 是否是圆
+     * @param sourceArray
+     * @param value value of target element
+     * @param defaultValue default return value
+     * @param isCircle whether is circle
      * @return
      */
     public static <V> V getNext(V[] sourceArray, V value, V defaultValue, boolean isCircle) {
@@ -94,21 +110,21 @@ public class ArrayUtils {
     }
 
     /**
-     * 参考{@link ArrayUtils#getLast(Object[], Object, Object, boolean)} defaultValue为null
+     * @see {@link ArrayUtils#getLast(Object[], Object, Object, boolean)} defaultValue is null
      */
     public static <V> V getLast(V[] sourceArray, V value, boolean isCircle) {
         return getLast(sourceArray, value, null, isCircle);
     }
 
     /**
-     * 参考{@link ArrayUtils#getNext(Object[], Object, Object, boolean)} defaultValue为null
+     * @see {@link ArrayUtils#getNext(Object[], Object, Object, boolean)} defaultValue is null
      */
     public static <V> V getNext(V[] sourceArray, V value, boolean isCircle) {
         return getNext(sourceArray, value, null, isCircle);
     }
 
     /**
-     * 参考{@link ArrayUtils#getLast(Object[], Object, Object, boolean)} Object为Long
+     * @see {@link ArrayUtils#getLast(Object[], Object, Object, boolean)} Object is Long
      */
     public static long getLast(long[] sourceArray, long value, long defaultValue, boolean isCircle) {
         if (sourceArray.length == 0) {
@@ -121,7 +137,7 @@ public class ArrayUtils {
     }
 
     /**
-     * 参考{@link ArrayUtils#getNext(Object[], Object, Object, boolean)} Object为Long
+     * @see {@link ArrayUtils#getNext(Object[], Object, Object, boolean)} Object is Long
      */
     public static long getNext(long[] sourceArray, long value, long defaultValue, boolean isCircle) {
         if (sourceArray.length == 0) {
@@ -133,7 +149,7 @@ public class ArrayUtils {
     }
 
     /**
-     * 参考{@link ArrayUtils#getLast(Object[], Object, Object, boolean)} Object为Integer
+     * @see {@link ArrayUtils#getLast(Object[], Object, Object, boolean)} Object is Integer
      */
     public static int getLast(int[] sourceArray, int value, int defaultValue, boolean isCircle) {
         if (sourceArray.length == 0) {
@@ -146,7 +162,7 @@ public class ArrayUtils {
     }
 
     /**
-     * 参考{@link ArrayUtils#getNext(Object[], Object, Object, boolean)} Object为Integer
+     * @see {@link ArrayUtils#getNext(Object[], Object, Object, boolean)} Object is Integer
      */
     public static int getNext(int[] sourceArray, int value, int defaultValue, boolean isCircle) {
         if (sourceArray.length == 0) {

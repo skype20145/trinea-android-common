@@ -23,7 +23,7 @@ import android.view.View;
 
 import com.trinea.android.common.service.Cache;
 import com.trinea.android.common.service.CacheFullRemoveType;
-import com.trinea.android.common.serviceImpl.AutoGetDataCache.OnGetDataListener;
+import com.trinea.android.common.serviceImpl.PreloadDataCache.OnGetDataListener;
 import com.trinea.android.common.utils.ImageUtils;
 import com.trinea.android.common.utils.SerializeUtils;
 import com.trinea.android.common.utils.StringUtils;
@@ -73,7 +73,7 @@ public class ImageCache implements Serializable, Cache<String, Drawable> {
                                                                                                        .availableProcessors() * 2 + 1);
 
     /** 图片缓存 **/
-    private AutoGetDataCache<String, Drawable> imageCache;
+    private PreloadDataCache<String, Drawable> imageCache;
 
     /** 图片获取结束后的回调接口 **/
     private OnImageCallListener                listener;
@@ -199,7 +199,7 @@ public class ImageCache implements Serializable, Cache<String, Drawable> {
             throw new IllegalArgumentException("The getDataListener of cache can not be null.");
         }
 
-        this.imageCache = new AutoGetDataCache<String, Drawable>(getDataListener, maxSize,
+        this.imageCache = new PreloadDataCache<String, Drawable>(getDataListener, maxSize,
                                                                  validTime, cacheFullRemoveType);
         this.listener = imageCallBackListener;
         this.handler = new MyHandler();
@@ -380,7 +380,7 @@ public class ImageCache implements Serializable, Cache<String, Drawable> {
                 || removeType instanceof RemoveTypeDrawableLarge) {
                 removeType = new RemoveTypeNull<Byte[]>();
             }
-            AutoGetDataCache<String, byte[]> byteCache = new AutoGetDataCache<String, byte[]>(
+            PreloadDataCache<String, byte[]> byteCache = new PreloadDataCache<String, byte[]>(
                                                                                               null,
                                                                                               imageCache.getMaxSize(),
                                                                                               imageCache.getValidTime(),
@@ -424,7 +424,7 @@ public class ImageCache implements Serializable, Cache<String, Drawable> {
     private void readObject(ObjectInputStream in) {
         try {
             GetField readFields = in.readFields();
-            AutoGetDataCache<String, byte[]> byteCache = (AutoGetDataCache<String, byte[]>)readFields.get("imageCache",
+            PreloadDataCache<String, byte[]> byteCache = (PreloadDataCache<String, byte[]>)readFields.get("imageCache",
                                                                                                           null);
             listener = (OnImageCallListener)readFields.get("listener", null);
             if (byteCache != null) {
@@ -433,7 +433,7 @@ public class ImageCache implements Serializable, Cache<String, Drawable> {
                 if (removeType instanceof RemoveTypeNull) {
                     removeType = new RemoveTypeDrawableSmall();
                 }
-                imageCache = new AutoGetDataCache<String, Drawable>(DEFAULT_GET_IMAGE_LISTENER,
+                imageCache = new PreloadDataCache<String, Drawable>(DEFAULT_GET_IMAGE_LISTENER,
                                                                     byteCache.getMaxSize(),
                                                                     byteCache.getValidTime(),
                                                                     removeType);

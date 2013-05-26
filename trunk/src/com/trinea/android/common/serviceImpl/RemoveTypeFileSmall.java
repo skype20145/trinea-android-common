@@ -1,13 +1,18 @@
 package com.trinea.android.common.serviceImpl;
 
-import com.trinea.android.common.utils.FileUtils;
 import com.trinea.android.common.entity.CacheObject;
 import com.trinea.android.common.service.CacheFullRemoveType;
+import com.trinea.android.common.utils.FileUtils;
 
 /**
- * 缓存满时删除数据的类型--文件小先删除；若文件大小相同，对象使用次数(即被get的次数)少先删除；若对象使用次数相同，对象进入缓存时间早先删除
+ * Remove type when cache is full, data type of cache is string, and it represents the path of a file.<br/>
+ * <ul>
+ * <li>if file is smaller, remove it first</li>
+ * <li>if file is equal to each other, remove the one which is used less</li>
+ * <li>if file is equal to each other and used count is equal, remove the one which is first in</li>
+ * </ul>
  * 
- * @author Trinea 2012-6-30 下午11:30:01
+ * @author Trinea 2011-12-26
  */
 public class RemoveTypeFileSmall implements CacheFullRemoveType<String> {
 

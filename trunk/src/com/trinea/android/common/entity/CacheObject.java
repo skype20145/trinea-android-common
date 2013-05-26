@@ -5,29 +5,29 @@ import java.io.Serializable;
 import com.trinea.android.common.utils.ObjectUtils;
 
 /**
- * 缓存中的数据
+ * Object in cache
  * 
- * @author Trinea 2011-12-23 上午01:27:06
+ * @author Trinea 2011-12-23
  */
 public class CacheObject<V> implements Serializable, Comparable<CacheObject<V>> {
 
     private static final long serialVersionUID = 1L;
 
-    /** 对象进入缓存时间 **/
+    /** time first put into cache, in mills **/
     protected long            enterTime;
-    /** 对象上次使用时间， 即上次被get的时间 **/
+    /** time last used(got), in mills **/
     protected long            lastUsedTime;
-    /** 对象使用次数， get一次表示被使用一次 **/
+    /** used(got) count **/
     protected long            usedCount;
-    /** 对象优先级 **/
+    /** priority, default is zero **/
     protected int             priority;
 
-    /** 对象是否已经过期 **/
+    /** whether has expired, default is false **/
     protected boolean         isExpired;
-    /** 对象是否永不过期 **/
+    /** whether is valid forever, default is true **/
     protected boolean         isForever;
 
-    /** 对象数据 **/
+    /** data **/
     protected V               data;
 
     public CacheObject(){
@@ -44,73 +44,155 @@ public class CacheObject<V> implements Serializable, Comparable<CacheObject<V>> 
         this.data = data;
     }
 
+    /**
+     * Get time first put into cache, in mills
+     * 
+     * @return
+     */
     public long getEnterTime() {
         return enterTime;
     }
 
+    /**
+     * Set time first put into cache, in mills
+     * 
+     * @param enterTime
+     */
     public void setEnterTime(long enterTime) {
         this.enterTime = enterTime;
     }
 
+    /**
+     * Get time last used(got), in mills
+     * 
+     * @return
+     */
     public long getLastUsedTime() {
         return lastUsedTime;
     }
 
+    /**
+     * Set time last used(got), in mills
+     * 
+     * @param lastUsedTime
+     */
     public void setLastUsedTime(long lastUsedTime) {
         this.lastUsedTime = lastUsedTime;
     }
 
+    /**
+     * Get used(got) count
+     * 
+     * @return
+     */
     public long getUsedCount() {
         return usedCount;
     }
 
+    /**
+     * Set used(got) count
+     * 
+     * @return
+     */
     public void setUsedCount(long usedCount) {
         this.usedCount = usedCount;
     }
 
+    /**
+     * Atomically increments by one the used(got) count
+     * 
+     * @return the previous used(got) count
+     */
+    public synchronized long getAndIncrementUsedCount() {
+        return usedCount++;
+    }
+
+    /**
+     * Get priority, default is zero
+     * 
+     * @return
+     */
     public int getPriority() {
         return priority;
     }
 
+    /**
+     * Set priority, default is zero
+     * 
+     * @param priority
+     */
     public void setPriority(int priority) {
         this.priority = priority;
     }
 
+    /**
+     * Get whether has expired, default is false
+     * 
+     * @return
+     */
     public boolean isExpired() {
         return isExpired;
     }
 
+    /**
+     * Set whether has expired, default is false
+     * 
+     * @param isExpired
+     */
     public void setExpired(boolean isExpired) {
         this.isExpired = isExpired;
     }
 
+    /**
+     * Get whether is valid forever, default is true
+     * 
+     * @return
+     */
     public boolean isForever() {
         return isForever;
     }
 
+    /**
+     * Set whether is valid forever, default is true
+     * 
+     * @param isForever
+     */
     public void setForever(boolean isForever) {
         this.isForever = isForever;
     }
 
+    /**
+     * Get data
+     * 
+     * @return
+     */
     public V getData() {
         return data;
     }
 
+    /**
+     * Set data
+     * 
+     * @param data
+     */
     public void setData(V data) {
         this.data = data;
     }
 
     /**
-     * 仅对data字段进行比较
+     * compare with data
      * 
      * @param o
      * @return
      */
     @Override
     public int compareTo(CacheObject<V> o) {
-        return o == null ? 1 : ObjectUtils.compare(this.getData(), o.getData());
+        return o == null ? 1 : ObjectUtils.compare(this.data, o.data);
     }
 
+    /**
+     * if data, enterTime, priority, isExpired, isForever all equals
+     */
     @SuppressWarnings("unchecked")
     public boolean equals(Object o) {
         if (o == null) {
@@ -118,8 +200,7 @@ public class CacheObject<V> implements Serializable, Comparable<CacheObject<V>> 
         }
 
         CacheObject<V> obj = (CacheObject<V>)(o);
-        return (ObjectUtils.isEquals(this.getData(), obj.getData())
-                && this.getEnterTime() == obj.getEnterTime()
-                && this.getPriority() == obj.getPriority() && this.isExpired == obj.isExpired && this.isForever == obj.isForever);
+        return (ObjectUtils.isEquals(this.data, obj.data) && this.enterTime == obj.enterTime
+                && this.priority == obj.priority && this.isExpired == obj.isExpired && this.isForever == obj.isForever);
     }
 }

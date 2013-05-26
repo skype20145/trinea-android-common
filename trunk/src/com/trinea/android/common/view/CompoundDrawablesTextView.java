@@ -32,7 +32,7 @@ import android.widget.TextView;
  * 实现原理见http://trinea.iteye.com/blog/1562388
  * </ul>
  * 
- * @author Trinea 2012-5-3 下午04:47:39
+ * @author Trinea 2012-5-3
  */
 public class CompoundDrawablesTextView extends TextView implements OnClickListener {
 

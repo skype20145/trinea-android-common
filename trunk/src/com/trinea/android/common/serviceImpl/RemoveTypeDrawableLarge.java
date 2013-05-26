@@ -2,14 +2,19 @@ package com.trinea.android.common.serviceImpl;
 
 import android.graphics.drawable.Drawable;
 
-import com.trinea.android.common.utils.ImageUtils;
 import com.trinea.android.common.entity.CacheObject;
 import com.trinea.android.common.service.CacheFullRemoveType;
+import com.trinea.android.common.utils.ImageUtils;
 
 /**
- * 缓存满时删除数据的类型--Drawable大先删除；若Drawable大小相同，对象使用次数(即被get的次数)少先删除；若对象使用次数相同，对象进入缓存时间早先删除
+ * Remove type when cache is full, data type of cache is drawable.<br/>
+ * <ul>
+ * <li>if drawable is bigger, remove it first</li>
+ * <li>if drawable is equal to each other, remove the one which is used less</li>
+ * <li>if drawable is equal to each other and used count is equal, remove the one which is first in</li>
+ * </ul>
  * 
- * @author Trinea 2012-6-30 下午11:30:01
+ * @author Trinea 2011-12-26
  */
 public class RemoveTypeDrawableLarge implements CacheFullRemoveType<Drawable> {
 
@@ -29,7 +34,7 @@ public class RemoveTypeDrawableLarge implements CacheFullRemoveType<Drawable> {
     }
 
     /**
-     * 得到CacheObject中Drawable的大小
+     * get size of drawable
      * 
      * @param o
      * @return
@@ -39,6 +44,7 @@ public class RemoveTypeDrawableLarge implements CacheFullRemoveType<Drawable> {
             return -1;
         }
 
+        // TODO is there any more efficient way?
         byte[] b = ImageUtils.drawableToByte(o.getData());
         return (b == null ? -1 : b.length);
     }
