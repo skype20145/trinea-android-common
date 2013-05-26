@@ -8,17 +8,18 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 /**
- * 序列化工具类
+ * Serialize Utils
  * 
- * @author Trinea 2012-5-14 下午04:22:24
+ * @author Trinea 2012-5-14
  */
 public class SerializeUtils {
 
     /**
-     * 反序列化
+     * deserialization from file
      * 
-     * @param filePath 序列化文件路径
-     * @return 得到的对象
+     * @param filePath
+     * @return
+     * @throws RuntimeException if an error occurs
      */
     public static Object deserialization(String filePath) {
         ObjectInputStream in = null;
@@ -45,11 +46,12 @@ public class SerializeUtils {
     }
 
     /**
-     * 序列化
+     * serialize to file
      * 
-     * @param filePath 序列化文件路径
-     * @param obj 序列化的对象
+     * @param filePath
+     * @param obj
      * @return
+     * @throws RuntimeException if an error occurs
      */
     public static void serialization(String filePath, Object obj) {
         ObjectOutputStream out = null;

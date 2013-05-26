@@ -4,16 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * List工具类，用于实现一些list的常用操作
+ * List Utils
  * 
- * @author Trinea 2011-7-22 上午12:37:10
+ * @author Trinea 2011-7-22
  */
 public class ListUtils {
 
+    /** default join separator **/
     public static final String DEFAULT_JOIN_SEPARATOR = ",";
 
     /**
-     * 判断list是否为空或大小为0
+     * is null or its size is 0
      * 
      * <pre>
      * isEmpty(null)   =   true;
@@ -23,20 +24,20 @@ public class ListUtils {
      * 
      * @param <V>
      * @param sourceList
-     * @return 若list为null或长度为0, 返回true; 否则返回false.
+     * @return if list is null or its size is 0, return true, else return false.
      */
     public static <V> boolean isEmpty(List<V> sourceList) {
         return (sourceList == null || sourceList.size() == 0);
     }
 
     /**
-     * 比较两个ArrayList是否相等
+     * compare two list
      * 
      * <pre>
      * isEquals(null, null) = true;
-     * isEquals(new ArrayList<String>(), null) = false;
-     * isEquals(null, new ArrayList<String>()) = false;
-     * isEquals(new ArrayList<String>(), new ArrayList<String>()) = true;
+     * isEquals(new ArrayList&lt;String&gt;(), null) = false;
+     * isEquals(null, new ArrayList&lt;String&gt;()) = false;
+     * isEquals(new ArrayList&lt;String&gt;(), new ArrayList&lt;String&gt;()) = true;
      * </pre>
      * 
      * @param <V>
@@ -64,7 +65,7 @@ public class ListUtils {
     }
 
     /**
-     * 将list中所有元素以默认分隔符拼接返回，默认分隔符为","
+     * join list to string, separator is ","
      * 
      * <pre>
      * join(null)      =   "";
@@ -73,14 +74,14 @@ public class ListUtils {
      * </pre>
      * 
      * @param list
-     * @return list中所有元素以默认分隔符拼接返回。若list为空或长度为0返回""
+     * @return join list to string, separator is ",". if list is empty, return ""
      */
     public static String join(List<String> list) {
         return join(list, DEFAULT_JOIN_SEPARATOR);
     }
 
     /**
-     * 将list中所有元素以separator分隔符拼接返回
+     * join list to string
      * 
      * <pre>
      * join(null, '#')     =   "";
@@ -91,14 +92,14 @@ public class ListUtils {
      * 
      * @param list
      * @param separator
-     * @return list中所有元素以separator分隔符拼接返回。若list为空或长度为0返回""
+     * @return join list to string. if list is empty, return ""
      */
     public static String join(List<String> list, char separator) {
-        return join(list, separator + "");
+        return join(list, new String(new char[] { separator }));
     }
 
     /**
-     * 将list中所有元素以separator分隔符拼接返回，separator为空则采用默认分隔符","
+     * join list to string. if separator is null, use {@link #DEFAULT_JOIN_SEPARATOR}
      * 
      * <pre>
      * join(null, "#")     =   "";
@@ -111,7 +112,7 @@ public class ListUtils {
      * 
      * @param list
      * @param separator
-     * @return list中所有元素以separator分隔符拼接返回。若list为空或长度为0返回""
+     * @return join list to string with separator. if list is empty, return ""
      */
     public static String join(List<String> list, String separator) {
         if (isEmpty(list)) {
@@ -133,24 +134,24 @@ public class ListUtils {
     }
 
     /**
-     * 向sourceList中新增不重复元素
+     * add distinct entry to list
      * 
      * @param <V>
      * @param sourceList
      * @param entry
-     * @return 若entry在sourceList已经存在，返回false；否则新增并返回true 注意此函数不能保证源sourceList中元素不重复。
+     * @return if entry already exist in sourceList, return false, else add it and return true.
      */
     public static <V> boolean addDistinctEntry(List<V> sourceList, V entry) {
         return (sourceList != null && !sourceList.contains(entry)) ? sourceList.add(entry) : false;
     }
 
     /**
-     * 向sourceList中插入包含在entryList而不包含在sourceList中的元素
+     * add all distinct entry to list1 from list2
      * 
      * @param <V>
      * @param sourceList
      * @param entryList
-     * @return 向sourceList插入的元素个数 注意此函数不能保证源sourceList中元素不重复。
+     * @return the count of entries be added
      */
     public static <V> int addDistinctList(List<V> sourceList, List<V> entryList) {
         if (sourceList == null || isEmpty(entryList)) {
@@ -167,11 +168,11 @@ public class ListUtils {
     }
 
     /**
-     * 去除list中重复的元素
+     * remove duplicate entries in list
      * 
      * @param <V>
      * @param sourceList
-     * @return 去除元素的个数
+     * @return the count of entries be removed
      */
     public static <V> int distinctList(List<V> sourceList) {
         if (isEmpty(sourceList)) {
@@ -193,23 +194,22 @@ public class ListUtils {
     }
 
     /**
-     * 向list中新增非null value
+     * add not null entry to list
      * 
      * @param sourceList
      * @param value
-     * @return 若add成功，返回true，否则返回false
-     *         <ul>
-     *         <li>若sourceList为null，返回false，否则</li>
-     *         <li>若value为null，返回false，否则</li>
-     *         <li>{@link List#add(Object)} 返回true</li>
-     *         </ul>
+     * @return <ul>
+     * <li>if sourceList is null, return false</li>
+     * <li>if value is null, return false</li>
+     * <li>return {@link List#add(Object)}</li>
+     * </ul>
      */
     public static <V> boolean addListNotNullValue(List<V> sourceList, V value) {
         return (sourceList != null && value != null) ? sourceList.add(value) : false;
     }
 
     /**
-     * 参考{@link ArrayUtils#getLast(Object[], Object, Object, boolean)} defaultValue为null, isCircle为true
+     * @see {@link ArrayUtils#getLast(Object[], Object, Object, boolean)} defaultValue is null, isCircle is true
      */
     @SuppressWarnings("unchecked")
     public static <V> V getLast(List<V> sourceList, V value) {
@@ -217,7 +217,7 @@ public class ListUtils {
     }
 
     /**
-     * 参考{@link ArrayUtils#getNext(Object[], Object, Object, boolean)} defaultValue为null, isCircle为true
+     * @see {@link ArrayUtils#getNext(Object[], Object, Object, boolean)} defaultValue is null, isCircle is true
      */
     @SuppressWarnings("unchecked")
     public static <V> V getNext(List<V> sourceList, V value) {
@@ -225,7 +225,7 @@ public class ListUtils {
     }
 
     /**
-     * 将list倒置
+     * invert list
      * 
      * @param <V>
      * @param sourceList

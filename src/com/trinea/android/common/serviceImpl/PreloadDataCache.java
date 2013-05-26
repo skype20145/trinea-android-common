@@ -8,40 +8,42 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.trinea.android.common.entity.CacheObject;
 import com.trinea.android.common.service.CacheFullRemoveType;
+import com.trinea.android.common.serviceImpl.PreloadDataCache.OnGetDataListener;
 import com.trinea.android.common.utils.ListUtils;
 import com.trinea.android.common.utils.ObjectUtils;
 import com.trinea.android.common.utils.SerializeUtils;
-import com.trinea.android.common.entity.CacheObject;
 
 /**
- * <strong>自动获取新数据的缓存</strong>，适用于获取数据较耗时的应用，如网络通讯、响应慢数据获取。<br/>
+ * <strong>Preload data cache</strong>, It a good choice for network application which need to preload data.<br/>
  * <br/>
- * 可用来自动获取新数据进行缓存。支持前后双向多个数据缓存，使得数据获取效率大大提高，下次使用该数据时不用实时获取直接读取缓存即可<br/>
- * <br/>
+ * you can use this cache to preload data, it support preload data backward, forward or both. and you can set preload
+ * count.<br/>
  * <ul>
- * 缓存设置及使用
- * <li>使用下面缓存初始化中介绍的几种构造函数之一初始化缓存，使用{@link #setForwardCacheNumber(int)}设置向前缓存个数，默认个数为
- * {@link #DEFAULT_FORWARD_CACHE_NUMBER}；使用{@link #setBackCacheNumber(int)} 设置向后缓存个数，默认个数为
+ * <strong>Setting and Usage</strong>
+ * <li>use one of constructors below to init cache</li>
+ * <li>use {@link #setForwardCacheNumber(int)} to set count for preload forward, default is
+ * {@link #DEFAULT_FORWARD_CACHE_NUMBER}</li>
+ * <li>use {@link #setBackCacheNumber(int)} to set count for preload backward, default is
  * {@link #DEFAULT_BACK_CACHE_NUMBER}</li>
- * <li>使用{@link #get(Object, List)}get某个key，并且会自动获取list中key进行缓存</li>
- * <li>使用{@link #get(Object)}get某个key，但不会自动获取新数据进行缓存</li>
- * <li>使用{@link #loadCache(String)}从文件中恢复缓存</li>
- * <li>使用{@link SimpleCache#saveCache(String, SimpleCache)}保存缓存到文件</li>
+ * <li>{@link #get(Object, List)} get object, if list is not null, will preload data auto according to keys in list</li>
+ * <li>{@link #get(Object)} get object, and not preload data</li>
+ * <li>{@link SimpleCache#saveCache(String, SimpleCache)} save cache to a file</li>
  * </ul>
  * <ul>
- * 缓存初始化
+ * <strong>Constructor</strong>
  * <li>{@link #AutoGetDataCache(OnGetDataListener)}</li>
  * <li>{@link #AutoGetDataCache(OnGetDataListener, int)}</li>
  * <li>{@link #AutoGetDataCache(OnGetDataListener, int, long)}</li>
  * <li>{@link #AutoGetDataCache(OnGetDataListener, int, CacheFullRemoveType)}</li>
  * <li>{@link #AutoGetDataCache(OnGetDataListener, int, long, CacheFullRemoveType)}</li>
- * <li>{@link #loadCache(String)}从文件中恢复缓存</li>
+ * <li>{@link #loadCache(String)} recover cache from a file</li>
  * </ul>
  * 
- * @author Trinea 2012-3-4 下午12:39:17
+ * @author Trinea 2012-3-4
  */
-public class AutoGetDataCache<K, V> extends SimpleCache<K, V> {
+public class PreloadDataCache<K, V> extends SimpleCache<K, V> {
 
     private static final long               serialVersionUID             = 1L;
 
@@ -290,7 +292,7 @@ public class AutoGetDataCache<K, V> extends SimpleCache<K, V> {
      * 
      * @param onGetDataListener 获取数据的方法
      */
-    public AutoGetDataCache(OnGetDataListener<K, V> onGetDataListener){
+    public PreloadDataCache(OnGetDataListener<K, V> onGetDataListener){
         this(onGetDataListener, DEFAULT_MAX_SIZE, -1, new RemoveTypeEnterTimeFirst<V>(), DEFAULT_THREAD_POOL_SIZE);
     }
 
@@ -305,7 +307,7 @@ public class AutoGetDataCache<K, V> extends SimpleCache<K, V> {
      * @param onGetDataListener 获取数据的方法
      * @param maxSize 缓存最大容量
      */
-    public AutoGetDataCache(OnGetDataListener<K, V> onGetDataListener, int maxSize){
+    public PreloadDataCache(OnGetDataListener<K, V> onGetDataListener, int maxSize){
         this(onGetDataListener, maxSize, -1, new RemoveTypeEnterTimeFirst<V>(), DEFAULT_THREAD_POOL_SIZE);
     }
 
@@ -320,7 +322,7 @@ public class AutoGetDataCache<K, V> extends SimpleCache<K, V> {
      * @param maxSize 缓存最大容量
      * @param validTime 缓存中元素有效时间，小于等于0表示元素不会失效，失效规则见{@link SimpleCache#isExpired(CacheObject)}
      */
-    public AutoGetDataCache(OnGetDataListener<K, V> onGetDataListener, int maxSize, long validTime){
+    public PreloadDataCache(OnGetDataListener<K, V> onGetDataListener, int maxSize, long validTime){
         this(onGetDataListener, maxSize, validTime, new RemoveTypeEnterTimeFirst<V>(), DEFAULT_THREAD_POOL_SIZE);
     }
 
@@ -335,7 +337,7 @@ public class AutoGetDataCache<K, V> extends SimpleCache<K, V> {
      * @param maxSize 缓存最大容量
      * @param cacheFullRemoveType cache满时删除元素类型，见{@link CacheFullRemoveType}
      */
-    public AutoGetDataCache(OnGetDataListener<K, V> onGetDataListener, int maxSize,
+    public PreloadDataCache(OnGetDataListener<K, V> onGetDataListener, int maxSize,
                             CacheFullRemoveType<V> cacheFullRemoveType){
         this(onGetDataListener, maxSize, -1, cacheFullRemoveType, DEFAULT_THREAD_POOL_SIZE);
     }
@@ -351,7 +353,7 @@ public class AutoGetDataCache<K, V> extends SimpleCache<K, V> {
      * @param validTime 缓存中元素有效时间，小于等于0表示元素不会失效，失效规则见{@link SimpleCache#isExpired(CacheObject)}
      * @param cacheFullRemoveType cache满时删除元素类型，见{@link CacheFullRemoveType}
      */
-    public AutoGetDataCache(OnGetDataListener<K, V> onGetDataListener, int maxSize, long validTime,
+    public PreloadDataCache(OnGetDataListener<K, V> onGetDataListener, int maxSize, long validTime,
                             CacheFullRemoveType<V> cacheFullRemoveType){
         this(onGetDataListener, maxSize, validTime, cacheFullRemoveType, DEFAULT_THREAD_POOL_SIZE);
     }
@@ -365,7 +367,7 @@ public class AutoGetDataCache<K, V> extends SimpleCache<K, V> {
      * @param cacheFullRemoveType cache满时删除元素类型，见{@link CacheFullRemoveType}
      * @param threadPoolSize 线程池大小
      */
-    public AutoGetDataCache(OnGetDataListener<K, V> onGetDataListener, int maxSize, long validTime,
+    public PreloadDataCache(OnGetDataListener<K, V> onGetDataListener, int maxSize, long validTime,
                             CacheFullRemoveType<V> cacheFullRemoveType, int threadPoolSize){
         super(maxSize, validTime, cacheFullRemoveType);
         this.onGetDataListener = onGetDataListener;
@@ -437,8 +439,8 @@ public class AutoGetDataCache<K, V> extends SimpleCache<K, V> {
      * @return
      */
     @SuppressWarnings("unchecked")
-    public static <K, V> AutoGetDataCache<K, V> loadCache(String filePath) {
-        return (AutoGetDataCache<K, V>)SerializeUtils.deserialization(filePath);
+    public static <K, V> PreloadDataCache<K, V> loadCache(String filePath) {
+        return (PreloadDataCache<K, V>)SerializeUtils.deserialization(filePath);
     }
 
     public void shutdown() {

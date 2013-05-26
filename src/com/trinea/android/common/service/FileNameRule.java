@@ -5,16 +5,16 @@ import java.io.Serializable;
 import com.trinea.android.common.serviceImpl.ImageSDCardCache;
 
 /**
- * 文件名规则，用于{@link ImageSDCardCache}保存图片时使用
+ * File name rule, used when save image to sdcard in {@link ImageSDCardCache}
  * 
- * @author Trinea 2012-7-6 上午11:03:16
+ * @author Trinea 2012-7-6
  */
 public interface FileNameRule extends Serializable {
 
     /**
-     * 得到文件名，包含后缀。可包含文件夹目录结构。
+     * get file name, include suffix, it's optional to include folder.
      * 
-     * @param imageUrl 图片对应的url
+     * @param imageUrl the url of image
      * @return
      */
     public String getFileName(String imageUrl);

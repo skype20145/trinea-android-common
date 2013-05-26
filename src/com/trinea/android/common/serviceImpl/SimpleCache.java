@@ -205,7 +205,7 @@ public class SimpleCache<K, V> implements Cache<K, V>, Serializable {
      */
     protected synchronized void setUsedInfo(CacheObject<V> obj) {
         if (obj != null) {
-            obj.setUsedCount(obj.getUsedCount() + 1);
+            obj.getAndIncrementUsedCount();
             obj.setLastUsedTime(System.currentTimeMillis());
         }
     }

@@ -14,17 +14,34 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 
 /**
- * 图片工具类
+ * ImageUtils
  * <ul>
- * Bitmap、byte数组、drawable之间转换
+ * convert between Bitmap, byte array, Drawable
+ * <li>{@link #bitmapToByte(Bitmap)}</li>
+ * <li>{@link #bitmapToDrawable(Bitmap)}</li>
+ * <li>{@link #byteToBitmap(byte[])}</li>
+ * <li>{@link #byteToDrawable(byte[])}</li>
+ * <li>{@link #drawableToBitmap(Drawable)}</li>
+ * <li>{@link #drawableToByte(Drawable)}</li>
+ * </ul>
+ * <ul>
+ * get image
+ * <li>{@link #getInputStreamFromUrl(String, int)}</li>
+ * <li>{@link #getBitmapFromUrl(String, int)}</li>
+ * <li>{@link #getDrawableFromUrl(String, int)}</li>
+ * </ul>
+ * <ul>
+ * scale image
+ * <li>{@link #scaleImageTo(Bitmap, int, int)}</li>
+ * <li>{@link #scaleImage(Bitmap, float, float)}</li>
  * </ul>
  * 
- * @author Trinea 2012-6-27 下午01:38:03
+ * @author Trinea 2012-6-27
  */
 public class ImageUtils {
 
     /**
-     * Bitmap转换为byte数组
+     * convert Bitmap to byte array
      * 
      * @param b
      * @return
@@ -40,7 +57,7 @@ public class ImageUtils {
     }
 
     /**
-     * byte数组转换为Bitmap
+     * convert byte array to Bitmap
      * 
      * @param b
      * @return
@@ -50,7 +67,7 @@ public class ImageUtils {
     }
 
     /**
-     * Drawable转换为Bitmap
+     * convert Drawable to Bitmap
      * 
      * @param d
      * @return
@@ -60,7 +77,7 @@ public class ImageUtils {
     }
 
     /**
-     * Bitmap转换为Drawable
+     * convert Bitmap to Drawable
      * 
      * @param b
      * @return
@@ -70,7 +87,7 @@ public class ImageUtils {
     }
 
     /**
-     * Drawable转换为byte数组
+     * convert Drawable to byte array
      * 
      * @param d
      * @return
@@ -80,7 +97,7 @@ public class ImageUtils {
     }
 
     /**
-     * byte数组转换为Drawable
+     * convert byte array to Drawable
      * 
      * @param b
      * @return
@@ -90,10 +107,13 @@ public class ImageUtils {
     }
 
     /**
-     * 根据imageUrl获得InputStream，需要自己手动关闭InputStream
+     * get input stream from network by imageurl, you need to close inputStream yourself
      * 
-     * @param imageUrl 图片url
+     * @param imageUrl
+     * @param readTimeOut read time out, if less than 0, not set
      * @return
+     * @throws MalformedURLException
+     * @throws IOException
      */
     public static InputStream getInputStreamFromUrl(String imageUrl, int readTimeOut) {
         InputStream stream = null;
@@ -115,9 +135,9 @@ public class ImageUtils {
     }
 
     /**
-     * 根据imageUrl获得Drawable
+     * get drawable by imageUrl
      * 
-     * @param imageUrl 图片url
+     * @param imageUrl
      * @return
      */
     public static Drawable getDrawableFromUrl(String imageUrl, int readTimeOut) {
@@ -128,9 +148,9 @@ public class ImageUtils {
     }
 
     /**
-     * 根据imageUrl获得Bitmap
+     * get Bitmap by imageUrl
      * 
-     * @param imageUrl 图片url
+     * @param imageUrl
      * @return
      */
     public static Bitmap getBitmapFromUrl(String imageUrl, int readTimeOut) {
@@ -141,11 +161,11 @@ public class ImageUtils {
     }
 
     /**
-     * 缩放图片
+     * scale image
      * 
-     * @param org 原图片
-     * @param newWidth 新图片的宽度
-     * @param newHeight 新图片的高度
+     * @param org
+     * @param newWidth
+     * @param newHeight
      * @return
      */
     public static Bitmap scaleImageTo(Bitmap org, int newWidth, int newHeight) {
@@ -153,11 +173,11 @@ public class ImageUtils {
     }
 
     /**
-     * 缩放图片
+     * scale image
      * 
-     * @param org 原图片
-     * @param scaleWidth 宽度缩放比例
-     * @param scaleHeight 高度缩放比例
+     * @param org
+     * @param scaleWidth sacle of width
+     * @param scaleHeight scale of height
      * @return
      */
     public static Bitmap scaleImage(Bitmap org, float scaleWidth, float scaleHeight) {
@@ -171,7 +191,7 @@ public class ImageUtils {
     }
 
     /**
-     * 关闭InputStream
+     * close inputStream
      * 
      * @param s
      */

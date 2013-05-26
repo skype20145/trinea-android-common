@@ -8,26 +8,24 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.trinea.android.common.utils.StringUtils;
-
 /**
- * Json工具类
+ * Json Utils
  * 
- * @author Trinea 2012-5-12 下午03:42:41
+ * @author Trinea 2012-5-12
  */
 public class JSONUtils {
 
     /**
-     * 从JSONObject中根据key得到Long型值，若存在异常则返回默认值
+     * get Long from jsonObject
      * 
      * @param jsonObject
      * @param key
      * @param defaultValue
      * @return <ul>
-     * <li>若jsonObject为null，返回defaultValue</li>
-     * <li>若key为null或为空字符串，返回defaultValue</li>
-     * <li>若{@link JSONObject#getLong(String)}异常，返回defaultValue</li>
-     * <li>返回{@link JSONObject#getLong(String)}</li>
+     * <li>if jsonObject is null, return defaultValue</li>
+     * <li>if key is null or empty, return defaultValue</li>
+     * <li>if {@link JSONObject#getLong(String)} exception, return defaultValue</li>
+     * <li>return {@link JSONObject#getLong(String)}</li>
      * </ul>
      */
     public static Long getLong(JSONObject jsonObject, String key, Long defaultValue) {
@@ -43,15 +41,15 @@ public class JSONUtils {
     }
 
     /**
-     * 从jsonData中根据key得到Long型值，若存在异常则返回默认值
+     * get Long from jsonData
      * 
      * @param jsonData
      * @param key
      * @param defaultValue
      * @return <ul>
-     * <li>若jsonData 为null或为空，返回defaultValue</li>
-     * <li>若jsonData {@link JSONObject#JSONObject(String)}异常，返回defaultValue</li>
-     * <li>调用{@link JSONUtils#getLong(JSONObject, String, JSONObject)}</li>
+     * <li>if jsonObject is null, return defaultValue</li>
+     * <li>if jsonData {@link JSONObject#JSONObject(String)} exception, return defaultValue</li>
+     * <li>return {@link JSONUtils#getLong(JSONObject, String, JSONObject)}</li>
      * </ul>
      */
     public static Long getLong(String jsonData, String key, Long defaultValue) {
@@ -68,40 +66,38 @@ public class JSONUtils {
     }
 
     /**
-     * 见{@link JSONUtils#getLong(JSONObject, String, Long)}
-     * 
      * @param jsonObject
      * @param key
      * @param defaultValue
      * @return
+     * @see {@link JSONUtils#getLong(JSONObject, String, Long)}
      */
     public static long getLong(JSONObject jsonObject, String key, long defaultValue) {
         return getLong(jsonObject, key, (Long)defaultValue);
     }
 
     /**
-     * 见{@link JSONUtils#getLong(String, String, Long)}
-     * 
      * @param jsonData
      * @param key
      * @param defaultValue
      * @return
+     * @see {@link JSONUtils#getLong(String, String, Long)}
      */
     public static long getLong(String jsonData, String key, long defaultValue) {
         return getLong(jsonData, key, (Long)defaultValue);
     }
 
     /**
-     * 从JSONObject中根据key得到Int型值，若存在异常则返回默认值
+     * get Int from jsonObject
      * 
      * @param jsonObject
      * @param key
      * @param defaultValue
      * @return <ul>
-     * <li>若jsonObject为null，返回defaultValue</li>
-     * <li>若key为null或为空字符串，返回defaultValue</li>
-     * <li>若{@link JSONObject#getInt(String)}异常，返回defaultValue</li>
-     * <li>返回{@link JSONObject#getInt(String)}</li>
+     * <li>if jsonObject is null, return defaultValue</li>
+     * <li>if key is null or empty, return defaultValue</li>
+     * <li>if {@link JSONObject#getInt(String)} exception, return defaultValue</li>
+     * <li>return {@link JSONObject#getInt(String)}</li>
      * </ul>
      */
     public static Integer getInt(JSONObject jsonObject, String key, Integer defaultValue) {
@@ -117,15 +113,15 @@ public class JSONUtils {
     }
 
     /**
-     * 从jsonData中根据key得到Int型值，若存在异常则返回默认值
+     * get Int from jsonData
      * 
      * @param jsonData
      * @param key
      * @param defaultValue
      * @return <ul>
-     * <li>若jsonData 为null或为空，返回defaultValue</li>
-     * <li>若jsonData {@link JSONObject#JSONObject(String)}异常，返回defaultValue</li>
-     * <li>调用{@link JSONUtils#getInt(JSONObject, String, JSONObject)}</li>
+     * <li>if jsonObject is null, return defaultValue</li>
+     * <li>if jsonData {@link JSONObject#JSONObject(String)} exception, return defaultValue</li>
+     * <li>return {@link JSONUtils#getInt(JSONObject, String, JSONObject)}</li>
      * </ul>
      */
     public static Integer getInt(String jsonData, String key, Integer defaultValue) {
@@ -142,40 +138,38 @@ public class JSONUtils {
     }
 
     /**
-     * 见{@link JSONUtils#getInt(JSONObject, String, Integer)}
-     * 
      * @param jsonObject
      * @param key
      * @param defaultValue
      * @return
+     * @see {@link JSONUtils#getInt(JSONObject, String, Integer)}
      */
     public static int getInt(JSONObject jsonObject, String key, int defaultValue) {
         return getInt(jsonObject, key, (Integer)defaultValue);
     }
 
     /**
-     * 见{@link JSONUtils#getInt(String, String, Integer)}
-     * 
      * @param jsonObject
      * @param key
      * @param defaultValue
      * @return
+     * @see {@link JSONUtils#getInt(String, String, Integer)}
      */
     public static int getInt(String jsonData, String key, int defaultValue) {
         return getInt(jsonData, key, (Integer)defaultValue);
     }
 
     /**
-     * 从JSONObject中根据key得到String型值，若存在异常则返回默认值
+     * get String from jsonObject
      * 
      * @param jsonObject
      * @param key
      * @param defaultValue
      * @return <ul>
-     * <li>若jsonObject为null，返回defaultValue</li>
-     * <li>若key为null或为空字符串，返回defaultValue</li>
-     * <li>若{@link JSONObject#getString(String)}异常，返回defaultValue</li>
-     * <li>返回{@link JSONObject#getString(String)}</li>
+     * <li>if jsonObject is null, return defaultValue</li>
+     * <li>if key is null or empty, return defaultValue</li>
+     * <li>if {@link JSONObject#getString(String)} exception, return defaultValue</li>
+     * <li>return {@link JSONObject#getString(String)}</li>
      * </ul>
      */
     public static String getString(JSONObject jsonObject, String key, String defaultValue) {
@@ -191,15 +185,15 @@ public class JSONUtils {
     }
 
     /**
-     * 从jsonData中根据key得到String型值，若存在异常则返回默认值
+     * get String from jsonData
      * 
      * @param jsonData
      * @param key
      * @param defaultValue
      * @return <ul>
-     * <li>若jsonData 为null或为空，返回defaultValue</li>
-     * <li>若jsonData {@link JSONObject#JSONObject(String)}异常，返回defaultValue</li>
-     * <li>调用{@link JSONUtils#getString(JSONObject, String, JSONObject)}</li>
+     * <li>if jsonObject is null, return defaultValue</li>
+     * <li>if jsonData {@link JSONObject#JSONObject(String)} exception, return defaultValue</li>
+     * <li>return {@link JSONUtils#getString(JSONObject, String, JSONObject)}</li>
      * </ul>
      */
     public static String getString(String jsonData, String key, String defaultValue) {
@@ -216,17 +210,17 @@ public class JSONUtils {
     }
 
     /**
-     * 从JSONObject中根据key得到String数组型值，若存在异常则返回默认值
+     * get String array from jsonObject
      * 
      * @param jsonObject
      * @param key
      * @param defaultValue
      * @return <ul>
-     * <li>若jsonObject为null，返回defaultValue</li>
-     * <li>若key为null或为空字符串，返回defaultValue</li>
-     * <li>若{@link JSONObject#getJSONArray(String)}异常，返回defaultValue</li>
-     * <li>若{@link JSONArray#getString(int)}异常，返回defaultValue</li>
-     * <li>返回{@link JSONArray#getString(int)}组成的数组</li>
+     * <li>if jsonObject is null, return defaultValue</li>
+     * <li>if key is null or empty, return defaultValue</li>
+     * <li>if {@link JSONObject#getJSONArray(String)} exception, return defaultValue</li>
+     * <li>if {@link JSONArray#getString(int)} exception, return defaultValue</li>
+     * <li>return string array</li>
      * </ul>
      */
     public static String[] getStringArray(JSONObject jsonObject, String key, String[] defaultValue) {
@@ -250,15 +244,15 @@ public class JSONUtils {
     }
 
     /**
-     * 从jsonData中根据key得到String数组型值，若存在异常则返回默认值
+     * get String array from jsonData
      * 
      * @param jsonData
      * @param key
      * @param defaultValue
      * @return <ul>
-     * <li>若jsonData 为null或为空，返回defaultValue</li>
-     * <li>若jsonData {@link JSONObject#JSONObject(String)}异常，返回defaultValue</li>
-     * <li>调用{@link JSONUtils#getStringArray(JSONObject, String, JSONObject)}</li>
+     * <li>if jsonObject is null, return defaultValue</li>
+     * <li>if jsonData {@link JSONObject#JSONObject(String)} exception, return defaultValue</li>
+     * <li>return {@link JSONUtils#getStringArray(JSONObject, String, JSONObject)}</li>
      * </ul>
      */
     public static String[] getStringArray(String jsonData, String key, String[] defaultValue) {
@@ -275,16 +269,16 @@ public class JSONUtils {
     }
 
     /**
-     * 从JSONObject中根据key得到JSONObject型值，若存在异常则返回默认值
+     * get JSONObject from jsonObject
      * 
-     * @param jsonObject
+     * @param jsonObject<em><em></em></em>
      * @param key
      * @param defaultValue
      * @return <ul>
-     * <li>若jsonObject为null，返回defaultValue</li>
-     * <li>若key为null或为空字符串，返回defaultValue</li>
-     * <li>若{@link JSONObject#getJSONObject(String)}异常，返回defaultValue</li>
-     * <li>返回{@link JSONObject#getJSONObject(String)}</li>
+     * <li>if jsonObject is null, return defaultValue</li>
+     * <li>if key is null or empty, return defaultValue</li>
+     * <li>if {@link JSONObject#getJSONObject(String)} exception, return defaultValue</li>
+     * <li>return {@link JSONObject#getJSONObject(String)}</li>
      * </ul>
      */
     public static JSONObject getJSONObject(JSONObject jsonObject, String key, JSONObject defaultValue) {
@@ -300,15 +294,15 @@ public class JSONUtils {
     }
 
     /**
-     * 从jsonData中根据key得到JSONObject型值，若存在异常则返回默认值
+     * get JSONObject from jsonData
      * 
      * @param jsonData
      * @param key
      * @param defaultValue
      * @return <ul>
-     * <li>若jsonData 为null或为空，返回defaultValue</li>
-     * <li>若jsonData {@link JSONObject#JSONObject(String)}异常，返回defaultValue</li>
-     * <li>调用{@link JSONUtils#getJSONObject(JSONObject, String, JSONObject)}</li>
+     * <li>if jsonObject is null, return defaultValue</li>
+     * <li>if jsonData {@link JSONObject#JSONObject(String)} exception, return defaultValue</li>
+     * <li>return {@link JSONUtils#getJSONObject(JSONObject, String, JSONObject)}</li>
      * </ul>
      */
     public static JSONObject getJSONObject(String jsonData, String key, JSONObject defaultValue) {
@@ -325,16 +319,16 @@ public class JSONUtils {
     }
 
     /**
-     * 从JSONObject中根据key得到JSONArray值，若存在异常则返回默认值
+     * get JSONArray from jsonObject
      * 
      * @param jsonObject
      * @param key
      * @param defaultValue
      * @return <ul>
-     * <li>若jsonObject为null，返回defaultValue</li>
-     * <li>若key为null或为空字符串，返回defaultValue</li>
-     * <li>若{@link JSONObject#getJSONArray(String)}异常，返回defaultValue</li>
-     * <li>返回{@link JSONObject#getJSONArray(String)}</li>
+     * <li>if jsonObject is null, return defaultValue</li>
+     * <li>if key is null or empty, return defaultValue</li>
+     * <li>if {@link JSONObject#getJSONArray(String)} exception, return defaultValue</li>
+     * <li>return {@link JSONObject#getJSONArray(String)}</li>
      * </ul>
      */
     public static JSONArray getJSONArray(JSONObject jsonObject, String key, JSONArray defaultValue) {
@@ -350,15 +344,15 @@ public class JSONUtils {
     }
 
     /**
-     * 从jsonData中根据key得到JSONArray型值，若存在异常则返回默认值
+     * get JSONArray from jsonData
      * 
      * @param jsonData
      * @param key
      * @param defaultValue
      * @return <ul>
-     * <li>若jsonData 为null或为空，返回defaultValue</li>
-     * <li>若jsonData {@link JSONObject#JSONObject(String)}异常，返回defaultValue</li>
-     * <li>调用{@link JSONUtils#getJSONArray(JSONObject, String, JSONObject)}</li>
+     * <li>if jsonObject is null, return defaultValue</li>
+     * <li>if jsonData {@link JSONObject#JSONObject(String)} exception, return defaultValue</li>
+     * <li>return {@link JSONUtils#getJSONArray(JSONObject, String, JSONObject)}</li>
      * </ul>
      */
     public static JSONArray getJSONArray(String jsonData, String key, JSONArray defaultValue) {
@@ -375,15 +369,15 @@ public class JSONUtils {
     }
 
     /**
-     * 从JSONObject中根据key得到boolean型值，若存在异常则返回默认值
+     * get Boolean from jsonObject
      * 
      * @param jsonObject
      * @param key
      * @param defaultValue
      * @return <ul>
-     * <li>若jsonObject为null，返回defaultValue</li>
-     * <li>若key为null或为空字符串，返回defaultValue</li>
-     * <li>若key对应的value为true，则返回true，否则返回false</li>
+     * <li>if jsonObject is null, return defaultValue</li>
+     * <li>if key is null or empty, return defaultValue</li>
+     * <li>return {@link JSONObject#getBoolean(String)}</li>
      * </ul>
      */
     public static boolean getBoolean(JSONObject jsonObject, String key, Boolean defaultValue) {
@@ -399,15 +393,15 @@ public class JSONUtils {
     }
 
     /**
-     * 从jsonData中根据key得到boolean型值，若存在异常则返回默认值
+     * get Boolean from jsonData
      * 
      * @param jsonData
      * @param key
      * @param defaultValue
      * @return <ul>
-     * <li>若jsonData 为null或为空，返回defaultValue</li>
-     * <li>若jsonData {@link JSONObject#JSONObject(String)}异常，返回defaultValue</li>
-     * <li>调用{@link JSONUtils#getBoolean(JSONObject, String, Boolean)}</li>
+     * <li>if jsonObject is null, return defaultValue</li>
+     * <li>if jsonData {@link JSONObject#JSONObject(String)} exception, return defaultValue</li>
+     * <li>return {@link JSONUtils#getBoolean(JSONObject, String, Boolean)}</li>
      * </ul>
      */
     public static boolean getBoolean(String jsonData, String key, Boolean defaultValue) {
@@ -424,9 +418,9 @@ public class JSONUtils {
     }
 
     /**
-     * 将key和value键值对形式的json转换成map，忽略为空的key，在解析异常时put空字符串
+     * parse key-value pairs to map. ignore empty key, if getValue exception, put empty value
      * 
-     * @param sourceObj key和value键值对形式的json
+     * @param sourceObj key-value pairs json
      * @return
      */
     @SuppressWarnings("rawtypes")
@@ -444,14 +438,14 @@ public class JSONUtils {
     }
 
     /**
-     * 将key和value键值对形式的json转换成map，忽略为空的key，在解析异常时put空字符串
+     * parse key-value pairs to map. ignore empty key, if getValue exception, put empty value
      * 
-     * @param source key和value键值对形式的json 字符串
+     * @param source key-value pairs json
      * @return
      * @see <ul>
-     * <li>若source 为null或为空，返回null</li>
-     * <li>若jsonData {@link JSONObject#JSONObject(String)}异常，返回null</li>
-     * <li>调用{@link JSONUtils#parseKeyAndValueToMap(JSONObject)}</li>
+     * <li>if source is null or empty, return null</li>
+     * <li>if jsonData {@link JSONObject#JSONObject(String)} exception, return null</li>
+     * <li>return {@link JSONUtils#parseKeyAndValueToMap(JSONObject)}</li>
      * </ul>
      */
     public static Map<String, String> parseKeyAndValueToMap(String source) {
@@ -467,6 +461,19 @@ public class JSONUtils {
         }
     }
 
+    /**
+     * get Double from jsonObject
+     * 
+     * @param jsonObject
+     * @param key
+     * @param defaultValue
+     * @return <ul>
+     * <li>if jsonObject is null, return defaultValue</li>
+     * <li>if key is null or empty, return defaultValue</li>
+     * <li>if {@link JSONObject#getDouble(String)} exception, return defaultValue</li>
+     * <li>return {@link JSONObject#getDouble(String)}</li>
+     * </ul>
+     */
     public static Double getDouble(JSONObject jsonObject, String key, Double defaultValue) {
         if (jsonObject == null || StringUtils.isEmpty(key)) {
             return defaultValue;
@@ -479,6 +486,18 @@ public class JSONUtils {
         }
     }
 
+    /**
+     * get Double from jsonData
+     * 
+     * @param jsonData
+     * @param key
+     * @param defaultValue
+     * @return <ul>
+     * <li>if jsonObject is null, return defaultValue</li>
+     * <li>if jsonData {@link JSONObject#JSONObject(String)} exception, return defaultValue</li>
+     * <li>return {@link JSONUtils#getDouble(JSONObject, String, JSONObject)}</li>
+     * </ul>
+     */
     public static Double getDouble(String jsonData, String key, Double defaultValue) {
         if (StringUtils.isEmpty(jsonData)) {
             return defaultValue;
@@ -492,10 +511,24 @@ public class JSONUtils {
         }
     }
 
+    /**
+     * @param jsonObject
+     * @param key
+     * @param defaultValue
+     * @return
+     * @see {@link JSONUtils#getDouble(JSONObject, String, Double)}
+     */
     public static double getDouble(JSONObject jsonObject, String key, double defaultValue) {
         return getDouble(jsonObject, key, (Double)defaultValue);
     }
 
+    /**
+     * @param jsonObject
+     * @param key
+     * @param defaultValue
+     * @return
+     * @see {@link JSONUtils#getDouble(String, String, Double)}
+     */
     public static double getDouble(String jsonData, String key, double defaultValue) {
         return getDouble(jsonData, key, (Double)defaultValue);
     }

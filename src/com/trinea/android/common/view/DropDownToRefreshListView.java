@@ -37,7 +37,7 @@ import com.trinea.android.common.R;
  * 实现原理见http://trinea.iteye.com/blog/1562281
  * </ul>
  * 
- * @author Trinea 2012-5-20 上午12:36:33
+ * @author Trinea 2012-5-20
  */
 public class DropDownToRefreshListView extends ListView implements OnScrollListener {
 

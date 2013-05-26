@@ -26,7 +26,7 @@ import com.trinea.android.common.utils.StringUtils;
 import com.trinea.android.common.entity.CacheObject;
 import com.trinea.android.common.service.Cache;
 import com.trinea.android.common.service.CacheFullRemoveType;
-import com.trinea.android.common.serviceImpl.AutoGetDataCache.OnGetDataListener;
+import com.trinea.android.common.serviceImpl.PreloadDataCache.OnGetDataListener;
 
 /**
  * <strong>图片Sd卡缓存</strong>，适用于图片较大，防止在内存中缓存会占用太多内存情况，图片较小情况可使用{@link ImageCache}。<br/>
@@ -518,7 +518,7 @@ public class ImageSDCardCache implements Serializable, Cache<String, String> {
      * 
      * @author Trinea 2012-6-30 下午09:42:00
      */
-    class FileSimpleCache extends AutoGetDataCache<String, String> {
+    class FileSimpleCache extends PreloadDataCache<String, String> {
 
         private static final long serialVersionUID = 1L;
 
@@ -608,7 +608,7 @@ public class ImageSDCardCache implements Serializable, Cache<String, String> {
                             FileUtils.writeFile(savePath, stream);
                         } catch (Exception e) {
                             if (e.getCause() instanceof FileNotFoundException) {
-                                FileUtils.makeFolder(savePath);
+                                FileUtils.makeFolders(savePath);
                                 FileUtils.writeFile(savePath, stream);
                             } else {
                                 savePath = null;

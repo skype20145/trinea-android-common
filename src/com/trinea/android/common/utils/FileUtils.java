@@ -13,23 +13,39 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 文件操作工具类
+ * File Utils
  * <ul>
- * <li>读写文件</li>
- * <li>文件字符串相关操作</li>
+ * Read or write file
+ * <li>{@link #readFile(String)} read file</li>
+ * <li>{@link #readFileToList(String)} read file to string list</li>
+ * <li>{@link #writeFile(String, String, boolean)} write file</li>
+ * <li>{@link #writeFile(String, InputStream)} write file</li>
+ * </ul>
+ * <ul>
+ * Operate file
+ * <li>{@link #getFileExtension(String)}</li>
+ * <li>{@link #getFileName(String)}</li>
+ * <li>{@link #getFileNameWithoutExtension(String)}</li>
+ * <li>{@link #getFileSize(String)}</li>
+ * <li>{@link #deleteFile(String)}</li>
+ * <li>{@link #isFileExist(String)}</li>
+ * <li>{@link #isFolderExist(String)}</li>
+ * <li>{@link #makeFolders(String)}</li>
+ * <li>{@link #makeDirs(String)}</li>
  * </ul>
  * 
- * @author Trinea 2012-5-12 下午03:42:05
+ * @author Trinea 2012-5-12
  */
 public class FileUtils {
 
     public final static String FILE_EXTENSION_SEPARATOR = ".";
 
     /**
-     * 读文件
+     * read file
      * 
-     * @param filePath 文件路径
-     * @return 若文件路径所在文件不存在返回null，否则返回文件内容
+     * @param filePath
+     * @return if file not exist, return null, else return content of file
+     * @throws IOException if an error occurs while operator BufferedReader
      */
     public static StringBuilder readFile(String filePath) {
         File file = new File(filePath);
@@ -63,12 +79,13 @@ public class FileUtils {
     }
 
     /**
-     * 写文件
+     * write file
      * 
-     * @param filePath 文件路径
-     * @param content 内容
-     * @param append 是否追加, true写在文件尾部，false写在文件头部（覆盖源文件内容）
-     * @return
+     * @param filePath
+     * @param content
+     * @param append is append, if true, write to the end of file, else clear content of file and write into it
+     * @return return true
+     * @throws IOException if an error occurs while operator FileWriter
      */
     public static boolean writeFile(String filePath, String content, boolean append) {
         FileWriter fileWriter = null;
@@ -91,11 +108,12 @@ public class FileUtils {
     }
 
     /**
-     * 写文件
+     * write file
      * 
-     * @param filePath 文件路径
-     * @param stream 内容流
-     * @return
+     * @param filePath
+     * @param stream
+     * @return return true
+     * @throws IOException if an error occurs while operator FileWriter
      */
     public static boolean writeFile(String filePath, InputStream stream) {
         OutputStream o = null;
@@ -125,10 +143,11 @@ public class FileUtils {
     }
 
     /**
-     * 读文件，每行作为list的一个元素
+     * read file to string list, a element of list is a line
      * 
-     * @param filePath 文件路径
-     * @return 若文件路径所在文件不存在返回null，否则返回文件内容
+     * @param filePath
+     * @return if file not exist, return null, else return content of file
+     * @throws IOException if an error occurs while operator BufferedReader
      */
     public static List<String> readFileToList(String filePath) {
         File file = new File(filePath);
@@ -159,11 +178,9 @@ public class FileUtils {
     }
 
     /**
-     * 从路径中获得文件名（不包含后缀名）
+     * get file name from path, not include suffix
      * 
-     * @param filePath 文件路径
-     * @return 文件名（不包含后缀名）
-     * @see <pre>
+     * <pre>
      *      getFileNameWithoutExtension(null)               =   null
      *      getFileNameWithoutExtension("")                 =   ""
      *      getFileNameWithoutExtension("   ")              =   "   "
@@ -177,6 +194,10 @@ public class FileUtils {
      *      getFileNameWithoutExtension("/home/admin")      =   "admin"
      *      getFileNameWithoutExtension("/home/admin/a.txt/b.mp3")  =   "b"
      * </pre>
+     * 
+     * @param filePath
+     * @return file name from path, not include suffix
+     * @see
      */
     public static String getFileNameWithoutExtension(String filePath) {
         if (StringUtils.isEmpty(filePath)) {
@@ -197,11 +218,9 @@ public class FileUtils {
     }
 
     /**
-     * 从路径中获得文件名（包含后缀名）
+     * get file name from path, include suffix
      * 
-     * @param filePath 文件路径
-     * @return 文件名（包含后缀名）
-     * @see <pre>
+     * <pre>
      *      getFileName(null)               =   null
      *      getFileName("")                 =   ""
      *      getFileName("   ")              =   "   "
@@ -215,6 +234,9 @@ public class FileUtils {
      *      getFileName("/home/admin")      =   "admin"
      *      getFileName("/home/admin/a.txt/b.mp3")  =   "b.mp3"
      * </pre>
+     * 
+     * @param filePath
+     * @return file name from path, include suffix
      */
     public static String getFileName(String filePath) {
         if (StringUtils.isEmpty(filePath)) {
@@ -229,11 +251,9 @@ public class FileUtils {
     }
 
     /**
-     * 从路径中获得文件夹路径
+     * get folder name from path
      * 
-     * @param filePath 文件名
-     * @return 文件夹路径
-     * @see <pre>
+     * <pre>
      *      getFolderName(null)               =   null
      *      getFolderName("")                 =   ""
      *      getFolderName("   ")              =   ""
@@ -248,6 +268,9 @@ public class FileUtils {
      *      getFolderName("/home/admin")      =   "/home"
      *      getFolderName("/home/admin/a.txt/b.mp3")  =   "/home/admin/a.txt"
      * </pre>
+     * 
+     * @param filePath
+     * @return
      */
     public static String getFolderName(String filePath) {
 
@@ -263,11 +286,9 @@ public class FileUtils {
     }
 
     /**
-     * 从路径中获得文件后缀名
+     * get suffix of file from path
      * 
-     * @param filePath 文件名
-     * @return 后缀名
-     * @see <pre>
+     * <pre>
      *      getFileExtension(null)               =   ""
      *      getFileExtension("")                 =   ""
      *      getFileExtension("   ")              =   "   "
@@ -282,6 +303,9 @@ public class FileUtils {
      *      getFileExtension("/home/admin/a.txt/b")  =   ""
      *      getFileExtension("/home/admin/a.txt/b.mp3")  =   "mp3"
      * </pre>
+     * 
+     * @param filePath
+     * @return
      */
     public static String getFileExtension(String filePath) {
         if (StringUtils.isBlank(filePath)) {
@@ -301,20 +325,25 @@ public class FileUtils {
     }
 
     /**
-     * 根据文件路径循环创建文件的文件夹<br/>
+     * Creates the directory named by the trailing filename of this file, including the complete directory path required
+     * to create this directory. <br/>
      * <br/>
-     * <strong>注意：</strong><br/>
-     * makeFolder("C:\\Users\\Trinea")仅能创建Users文件夹, makeFolder("C:\\Users\\Trinea\\")才能创建到Trinea文件夹
-     * 
-     * @param filePath 文件路径
-     * @return 是否成功创建文件夹，若文件夹已存在，返回true
      * <ul>
-     * <li>若{@link FileUtils#getFolderName(String)}返回为空，返回false;</li>
-     * <li>若文件夹存在，返回true</li>
-     * <li>否则返回{@link java.io.File#makeFolder}</li>
+     * <strong>Attentions：</strong>
+     * <li>makeDirs("C:\\Users\\Trinea") can only create users folder</li>
+     * <li>makeFolder("C:\\Users\\Trinea\\") can create Trinea folder</li>
+     * </ul>
+     * 
+     * @param filePath
+     * @return true if the necessary directories have been created or the target directory already exists, false one of
+     * the directories can not be created.
+     * <ul>
+     * <li>if {@link FileUtils#getFolderName(String)} return null, return false</li>
+     * <li>if target directory already exists, return true</li>
+     * <li>return {@link java.io.File#makeFolder}</li>
      * </ul>
      */
-    public static boolean makeFolder(String filePath) {
+    public static boolean makeDirs(String filePath) {
         String folderName = getFolderName(filePath);
         if (StringUtils.isEmpty(folderName)) {
             return false;
@@ -325,10 +354,19 @@ public class FileUtils {
     }
 
     /**
-     * 判断文件是否存在
+     * @param filePath
+     * @return
+     * @see {@link #makeDirs(String)}
+     */
+    public static boolean makeFolders(String filePath) {
+        return makeDirs(filePath);
+    }
+
+    /**
+     * Indicates if this file represents a file on the underlying file system.
      * 
-     * @param filePath 文件路径
-     * @return 存在返回true，否则返回false
+     * @param filePath
+     * @return
      */
     public static boolean isFileExist(String filePath) {
         if (StringUtils.isBlank(filePath)) {
@@ -340,10 +378,10 @@ public class FileUtils {
     }
 
     /**
-     * 判断文件夹是否存在
+     * Indicates if this file represents a directory on the underlying file system.
      * 
-     * @param directoryPath 文件夹路径
-     * @return 存在返回true，否则返回false
+     * @param directoryPath
+     * @return
      */
     public static boolean isFolderExist(String directoryPath) {
         if (StringUtils.isBlank(directoryPath)) {
@@ -355,15 +393,15 @@ public class FileUtils {
     }
 
     /**
-     * 删除文件或文件夹
+     * delete file or directory
      * <ul>
-     * <li>路径为null或空字符串，返回true</li>
-     * <li>路径不存在，返回true</li>
-     * <li>路径存在并且为文件或文件夹，返回{@link File#delete()}，否则返回false</li>
+     * <li>if path is null or empty, return true</li>
+     * <li>if path not exist, return true</li>
+     * <li>if path exist, delete recursion. return true</li>
      * <ul>
      * 
-     * @param path 路径
-     * @return 是否删除成功
+     * @param path
+     * @return
      */
     public static boolean deleteFile(String path) {
         if (StringUtils.isBlank(path)) {
@@ -390,13 +428,13 @@ public class FileUtils {
     }
 
     /**
-     * 得到文件大小
+     * get file size
      * <ul>
-     * <li>路径为null或空字符串，返回-1</li>
-     * <li>路径存在并且为文件，返回文件大小，否则返回-1</li>
+     * <li>if path is null or empty, return -1</li>
+     * <li>if path exist and it is a file, return file size, else return -1</li>
      * <ul>
      * 
-     * @param path 路径
+     * @param path
      * @return
      */
     public static long getFileSize(String path) {

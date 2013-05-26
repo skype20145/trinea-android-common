@@ -5,24 +5,25 @@ import java.io.Serializable;
 import com.trinea.android.common.entity.CacheObject;
 
 /**
- * 缓存满时删除数据的类型
+ * Remove type when cache is full.<br/>
+ * when cache is full, compare object is cache with this class, delete the smallest one.<br/>
+ * you can implements this interface.
  * 
- * @author Trinea 2011-12-26 下午11:40:39
+ * @author Trinea 2011-12-26
  */
 public interface CacheFullRemoveType<V> extends Serializable {
 
     /**
-     * 比较两个数据<br/>
-     * <br/>
+     * compare object <br/>
      * <ul>
-     * <strong>关于比较的结果</strong>
-     * <li>obj1大于obj2返回1</li>
-     * <li>obj1等于obj2返回0</li>
-     * <li>obj1小于obj2返回-1</li>
+     * <strong>About result</strong>
+     * <li>if obj1 > obj2, return 1</li>
+     * <li>if obj1 = obj2, return 0</li>
+     * <li>if obj1 < obj2, return -1</li>
      * </ul>
      * 
-     * @param obj1 数据1
-     * @param obj2 数据2
+     * @param obj1
+     * @param obj2
      * @return
      */
     public int compare(CacheObject<V> obj1, CacheObject<V> obj2);
