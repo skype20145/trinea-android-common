@@ -685,11 +685,11 @@ public class DropDownToRefreshListView extends ListView implements OnScrollListe
     private void getAttrs(Context context, AttributeSet attrs) {
         TypedArray ta = context.obtainStyledAttributes(attrs,
                                                        R.styleable.drop_down_to_refresh_list_attr);
-        isDropDownToRefreshStyle = ta.getBoolean(R.styleable.drop_down_to_refresh_list_attr_isDropDownToRefreshStyle,
+        isDropDownToRefreshStyle = ta.getBoolean(R.styleable.drop_down_to_refresh_list_attr_is_drop_down_to_refresh_style,
                                                  true);
-        isLoadMoreStyle = ta.getBoolean(R.styleable.drop_down_to_refresh_list_attr_isLoadMoreStyle,
+        isLoadMoreStyle = ta.getBoolean(R.styleable.drop_down_to_refresh_list_attr_is_load_more_style,
                                         true);
-        isAutoLoadMore = ta.getBoolean(R.styleable.drop_down_to_refresh_list_attr_isAutoLoadMore,
+        isAutoLoadMore = ta.getBoolean(R.styleable.drop_down_to_refresh_list_attr_is_auto_load_more,
                                        false);
         ta.recycle();
     }

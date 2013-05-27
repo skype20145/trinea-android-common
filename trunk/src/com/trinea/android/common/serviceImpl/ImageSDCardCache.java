@@ -375,7 +375,7 @@ public class ImageSDCardCache implements Serializable, Cache<String, String> {
     /**
      * 用来更新的消息
      * 
-     * @author gxwu@lewatek.com 2013-1-14
+     * @author Trinea 2013-1-14
      */
     private class UpdateMessage {
 
