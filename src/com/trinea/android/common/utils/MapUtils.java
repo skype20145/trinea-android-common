@@ -145,7 +145,7 @@ public class MapUtils {
     /**
      * get key by value, match the first entry front to back
      * <ul>
-     * <strong>Attention：</strong>
+     * <strong>Attentions：</strong>
      * <li>for HashMap, the order of entry not same to put order, so you may need to use TreeMap</li>
      * </ul>
      * 

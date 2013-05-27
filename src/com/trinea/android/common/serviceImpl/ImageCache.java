@@ -290,7 +290,7 @@ public class ImageCache implements Serializable, Cache<String, Drawable> {
     /**
      * 用来更新的消息
      * 
-     * @author gxwu@lewatek.com 2013-1-14
+     * @author Trinea 2013-1-14
      */
     private class UpdateMessage {
 

@@ -160,6 +160,78 @@ public class JSONUtils {
     }
 
     /**
+     * get Double from jsonObject
+     * 
+     * @param jsonObject
+     * @param key
+     * @param defaultValue
+     * @return <ul>
+     * <li>if jsonObject is null, return defaultValue</li>
+     * <li>if key is null or empty, return defaultValue</li>
+     * <li>if {@link JSONObject#getDouble(String)} exception, return defaultValue</li>
+     * <li>return {@link JSONObject#getDouble(String)}</li>
+     * </ul>
+     */
+    public static Double getDouble(JSONObject jsonObject, String key, Double defaultValue) {
+        if (jsonObject == null || StringUtils.isEmpty(key)) {
+            return defaultValue;
+        }
+
+        try {
+            return jsonObject.getDouble(key);
+        } catch (JSONException e) {
+            return defaultValue;
+        }
+    }
+
+    /**
+     * get Double from jsonData
+     * 
+     * @param jsonData
+     * @param key
+     * @param defaultValue
+     * @return <ul>
+     * <li>if jsonObject is null, return defaultValue</li>
+     * <li>if jsonData {@link JSONObject#JSONObject(String)} exception, return defaultValue</li>
+     * <li>return {@link JSONUtils#getDouble(JSONObject, String, JSONObject)}</li>
+     * </ul>
+     */
+    public static Double getDouble(String jsonData, String key, Double defaultValue) {
+        if (StringUtils.isEmpty(jsonData)) {
+            return defaultValue;
+        }
+
+        try {
+            JSONObject jsonObject = new JSONObject(jsonData);
+            return getDouble(jsonObject, key, defaultValue);
+        } catch (JSONException e) {
+            return defaultValue;
+        }
+    }
+
+    /**
+     * @param jsonObject
+     * @param key
+     * @param defaultValue
+     * @return
+     * @see {@link JSONUtils#getDouble(JSONObject, String, Double)}
+     */
+    public static double getDouble(JSONObject jsonObject, String key, double defaultValue) {
+        return getDouble(jsonObject, key, (Double)defaultValue);
+    }
+
+    /**
+     * @param jsonObject
+     * @param key
+     * @param defaultValue
+     * @return
+     * @see {@link JSONUtils#getDouble(String, String, Double)}
+     */
+    public static double getDouble(String jsonData, String key, double defaultValue) {
+        return getDouble(jsonData, key, (Double)defaultValue);
+    }
+
+    /**
      * get String from jsonObject
      * 
      * @param jsonObject
@@ -281,7 +353,8 @@ public class JSONUtils {
      * <li>return {@link JSONObject#getJSONObject(String)}</li>
      * </ul>
      */
-    public static JSONObject getJSONObject(JSONObject jsonObject, String key, JSONObject defaultValue) {
+    public static JSONObject getJSONObject(JSONObject jsonObject, String key,
+                                           JSONObject defaultValue) {
         if (jsonObject == null || StringUtils.isEmpty(key)) {
             return defaultValue;
         }
@@ -418,6 +491,47 @@ public class JSONUtils {
     }
 
     /**
+     * get map from jsonObject.
+     * 
+     * @param jsonObject key-value pairs json
+     * @param key
+     * @return <ul>
+     * <li>if jsonObject is null, return null</li>
+     * <li>return {@link JSONUtils#parseKeyAndValueToMap(String)}</li>
+     * </ul>
+     */
+    public static Map<String, String> getMap(JSONObject jsonObject, String key) {
+        return JSONUtils.parseKeyAndValueToMap(JSONUtils.getString(jsonObject, key, null));
+    }
+
+    /**
+     * get map from jsonData.
+     * 
+     * @param jsonData key-value pairs string
+     * @param key
+     * @return <ul>
+     * <li>if jsonData is null, return null</li>
+     * <li>if jsonData length is 0, return empty map</li>
+     * <li>if jsonData {@link JSONObject#JSONObject(String)} exception, return null</li>
+     * <li>return {@link JSONUtils#getMap(JSONObject, String)}</li>
+     * </ul>
+     */
+    public static Map<String, String> getMap(String jsonData, String key) {
+        if (jsonData == null) {
+            return null;
+        } else if (jsonData.length() == 0) {
+            return new HashMap<String, String>();
+        }
+
+        try {
+            JSONObject jsonObject = new JSONObject(jsonData);
+            return getMap(jsonObject, key);
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    /**
      * parse key-value pairs to map. ignore empty key, if getValue exception, put empty value
      * 
      * @param sourceObj key-value pairs json
@@ -441,16 +555,18 @@ public class JSONUtils {
      * parse key-value pairs to map. ignore empty key, if getValue exception, put empty value
      * 
      * @param source key-value pairs json
-     * @return
-     * @see <ul>
-     * <li>if source is null or empty, return null</li>
+     * @return <ul>
+     * <li>if source is null, return null</li>
+     * <li>if source's length is 0, return empty map</li>
      * <li>if jsonData {@link JSONObject#JSONObject(String)} exception, return null</li>
      * <li>return {@link JSONUtils#parseKeyAndValueToMap(JSONObject)}</li>
      * </ul>
      */
     public static Map<String, String> parseKeyAndValueToMap(String source) {
-        if (StringUtils.isEmpty(source)) {
+        if (source == null) {
             return null;
+        } else if (source.length() == 0) {
+            return new HashMap<String, String>();
         }
 
         try {
@@ -461,75 +577,4 @@ public class JSONUtils {
         }
     }
 
-    /**
-     * get Double from jsonObject
-     * 
-     * @param jsonObject
-     * @param key
-     * @param defaultValue
-     * @return <ul>
-     * <li>if jsonObject is null, return defaultValue</li>
-     * <li>if key is null or empty, return defaultValue</li>
-     * <li>if {@link JSONObject#getDouble(String)} exception, return defaultValue</li>
-     * <li>return {@link JSONObject#getDouble(String)}</li>
-     * </ul>
-     */
-    public static Double getDouble(JSONObject jsonObject, String key, Double defaultValue) {
-        if (jsonObject == null || StringUtils.isEmpty(key)) {
-            return defaultValue;
-        }
-
-        try {
-            return jsonObject.getDouble(key);
-        } catch (JSONException e) {
-            return defaultValue;
-        }
-    }
-
-    /**
-     * get Double from jsonData
-     * 
-     * @param jsonData
-     * @param key
-     * @param defaultValue
-     * @return <ul>
-     * <li>if jsonObject is null, return defaultValue</li>
-     * <li>if jsonData {@link JSONObject#JSONObject(String)} exception, return defaultValue</li>
-     * <li>return {@link JSONUtils#getDouble(JSONObject, String, JSONObject)}</li>
-     * </ul>
-     */
-    public static Double getDouble(String jsonData, String key, Double defaultValue) {
-        if (StringUtils.isEmpty(jsonData)) {
-            return defaultValue;
-        }
-
-        try {
-            JSONObject jsonObject = new JSONObject(jsonData);
-            return getDouble(jsonObject, key, defaultValue);
-        } catch (JSONException e) {
-            return defaultValue;
-        }
-    }
-
-    /**
-     * @param jsonObject
-     * @param key
-     * @param defaultValue
-     * @return
-     * @see {@link JSONUtils#getDouble(JSONObject, String, Double)}
-     */
-    public static double getDouble(JSONObject jsonObject, String key, double defaultValue) {
-        return getDouble(jsonObject, key, (Double)defaultValue);
-    }
-
-    /**
-     * @param jsonObject
-     * @param key
-     * @param defaultValue
-     * @return
-     * @see {@link JSONUtils#getDouble(String, String, Double)}
-     */
-    public static double getDouble(String jsonData, String key, double defaultValue) {
-        return getDouble(jsonData, key, (Double)defaultValue);
-    }
 }

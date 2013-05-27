@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<declare-styleable name="drop_down_to_refresh_list_attr"> 
-        <attr name="isDropDownToRefreshStyle" format="boolean"/> 
-        <attr name="isLoadMoreStyle" format="boolean"/>
-        <attr name="isAutoLoadMore" format="boolean"/>
-    </declare-styleable> 
+
+    <declare-styleable name="drop_down_to_refresh_list_attr">
+        <attr name="is_drop_down_to_refresh_style" format="boolean" />
+        <attr name="is_load_more_style" format="boolean" />
+        <attr name="is_auto_load_more" format="boolean" />
+    </declare-styleable>
+
 </resources>
