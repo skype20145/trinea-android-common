@@ -12,7 +12,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import android.annotation.SuppressLint;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
@@ -245,12 +244,12 @@ public class ImageSDCardCache extends PreloadDataCache<String, String> {
     }
 
     /**
-     * set http read image time out, if less than 0, not set. default is not set
+     * set http read image time out, if less than 0, not set. default is not set, in mills
      * 
-     * @param httpReadTimeOut
+     * @param readTimeOutMillis
      */
-    public void setHttpReadTimeOut(int httpReadTimeOut) {
-        this.httpReadTimeOut = httpReadTimeOut;
+    public void setHttpReadTimeOut(int readTimeOutMillis) {
+        this.httpReadTimeOut = readTimeOutMillis;
     }
 
     /**
@@ -339,7 +338,7 @@ public class ImageSDCardCache extends PreloadDataCache<String, String> {
     public interface OnImageSDCallbackListener extends Serializable {
 
         /**
-         * callback function after image get success
+         * callback function after image get success, run on ui thread
          * 
          * @param imageUrl imageUrl
          * @param imagePath image path
@@ -370,7 +369,6 @@ public class ImageSDCardCache extends PreloadDataCache<String, String> {
      * 
      * @author Trinea 2012-11-20
      */
-    @SuppressLint("HandlerLeak")
     private class MyHandler extends Handler {
 
         public void handleMessage(Message message) {
