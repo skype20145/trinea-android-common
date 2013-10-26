@@ -1,7 +1,10 @@
 package cn.trinea.android.common.util;
 
 import java.io.File;
+import java.util.List;
 
+import android.app.ActivityManager;
+import android.app.ActivityManager.RunningTaskInfo;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -30,6 +33,11 @@ import cn.trinea.android.common.util.ShellUtils.CommandResult;
  * <li>{@link PackageUtils#isSystemApplication(Context)}</li>
  * <li>{@link PackageUtils#isSystemApplication(Context, String)}</li>
  * <li>{@link PackageUtils#isSystemApplication(PackageManager, String)}</li>
+ * </ul>
+ * <ul>
+ * <strong>Others</strong>
+ * <li>{@link PackageUtils#isTopActivity(Context, String)} whether the app whost package's name is packageName is on the
+ * top of the stack</li>
  * </ul>
  * 
  * @author <a href="http://www.trinea.cn" target="_blank">Trinea</a> 2013-5-15
@@ -377,6 +385,36 @@ public class PackageUtils {
             e.printStackTrace();
         }
         return false;
+    }
+
+    /**
+     * whether the app whost package's name is packageName is on the top of the stack
+     * <ul>
+     * <strong>Attentions:</strong>
+     * <li>You should add <strong>android.permission.GET_TASKS</strong> in manifest</li>
+     * </ul>
+     * 
+     * @param context
+     * @param packageName
+     * @return if params error or task stack is null, return null, otherwise retun whether the app is on the top of
+     * stack
+     */
+    public static Boolean isTopActivity(Context context, String packageName) {
+        if (context == null || StringUtils.isEmpty(packageName)) {
+            return null;
+        }
+
+        ActivityManager activityManager = (ActivityManager)context.getSystemService(Context.ACTIVITY_SERVICE);
+        List<RunningTaskInfo> tasksInfo = activityManager.getRunningTasks(1);
+        if (ListUtils.isEmpty(tasksInfo)) {
+            return null;
+        }
+        try {
+            return packageName.equals(tasksInfo.get(0).topActivity.getPackageName());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     /**
